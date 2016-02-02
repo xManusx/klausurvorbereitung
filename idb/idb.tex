@@ -1,0 +1,1654 @@
+\documentclass[a4paper, 12pt]{scrartcl}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext}
+\usepackage{bussproofs}
+\usepackage{array}
+\usepackage{csquotes}
+\usepackage{listings}
+\lstset{breakatwhitespace=true,
+	basicstyle=\footnotesize
+}
+
+\usepackage{hyperref}
+
+\begin{document}
+\section*{IDB Zusammenfassung}
+\tableofcontents
+\section{Einführung}
+\subsection{Datenunabhängigkeit}
+\begin{itemize}
+	\item
+		dient Speichern und Wiedergewinnung (=Auffinden und Aushändigen) von Daten
+	\item
+		Keine Details der Speicherung (Adressen $\rightarrow$ Namen, Bytefolgen $\rightarrow$ Typen)
+	\item
+		Persistente Speicherung
+\end{itemize}
+\subsection{Schichtenbildung}
+\begin{itemize}
+	\item Schichten \enquote{benutzen} Ebenen darunter
+	\item Schicht bietet Dienste an der Schnittstelle nach oben an, verbirgt darunterliegende Schichten (Datenkapselung)
+	\item
+		Hierarchieebenen können als abstrakte/virtuelle Maschinen aufgefasst werden
+\end{itemize}
+\subsection{Datenbanktechnologie}
+\begin{itemize}
+	\item
+		Konzepte, Methoden, Werkzeuge:
+		\begin{description}
+			\item[dauerhaft] Lebensdauer Daten > Dauer Erzeugungsprozess
+			\item[zuverlässig] Integrität, Konsistenz, Verlustsicherheit
+			\item[unabhängig] wechselseitige Änderungsimmunität AP $\leftrightarrow$ DBS
+			\item[komfortabel] höhere, abstrakte Schnittstelle
+			\item[flexibel] Ad-hoc-Zugriffsmöglichkeit
+			\item[groß] Datenvolumen $<<$ Hauptspeicher
+			\item[integriert] kontrollierte Redundanz von/für mehrere Anwendungen
+			\item[mehrfach benutzbar] gleichzeitiger Zugriff
+		\end{description}
+	\item
+		Begriff: System zur Bescreibung, Speicherung und Wiedergewinnung von umfangreichen Datenmengen, die von mehreren Anwendungsprogrammen benutzt werden. Besteht aus:
+		\begin{itemize}
+			\item
+				Datenbank in der die Daten abgelegt werden
+			\item
+				Datenbank-Managementsystem: Software, die mit den Daten arbeitet (speichert, auffindet, etc.)
+		\end{itemize}
+\end{itemize}
+\section{Dateiverwaltung}
+\begin{itemize}
+	\item
+		Grundlage jedes DBMS
+\end{itemize}
+\subsection{Logische Speichergeräte}
+\begin{itemize}
+	\item
+		Erhöhung der Störsicherheit, Verdecken von Gerätefehlern, Verdecken von gerätespezifischer IO-Schnittstelle
+	\item
+		Typische Operationen:
+		\begin{itemize}
+			\item
+				\begin{lstlisting}
+				int Device::readBlock (
+				int CylinderNo, int TrackNo, int SlotNo, char *BlockBuffer )
+				\end{lstlisting}
+			\item
+				\begin{lstlisting}
+				int Device::writeBlock (
+				int CylinderNo, int TrackNo, int SlotNo, char *BlockBuffer )
+				\end{lstlisting}
+		\end{itemize}
+		$\Rightarrow$ physische Adressierung der Slots
+		\begin{itemize}
+			\item
+				Vorteile: schnell, maximale Speicherausnutzung
+			\item
+				Nachteile: kein Schutz, Wissen über Zuordnung zu Anwendungen nur im Programmierer, viele Fehlermöglichkeiten
+		\end{itemize}
+	\item
+		$\Rightarrow$ Dateien
+		\begin{itemize}
+			\item
+				haben Namen, Folge von Blöcken, ansprechbar über Blocknummer, dynamisch erweiterbar
+			\item Abstrahieren von eigentlicher Hardware
+			\item
+				Zugriffsoperationen:
+				\begin{itemize}
+					\item
+						\begin{lstlisting}
+						BockFile::BlockFile (char *Filename, char Mode, int *Blocksize )
+						\end{lstlisting}
+						öffnet die Datei [\dots]
+					\item
+
+						\begin{lstlisting}
+						int BlockFile::append (int NumberOfBlocks)
+						\end{lstlisting}
+						erweitert Datei um anzahl Blöcke, Rückgabewert wieviele Blöcke angelegt wurden
+					\item
+
+						\begin{lstlisting}
+						int BlockFile::write ( int BlockNo, char *BlockBuffer)
+						\end{lstlisting}
+						Überschreibt angegebenen Block mit neuem Inhalt 
+					\item
+						\begin{lstlisting}
+						int BlockFile::read ( int BlockNo, char *BlockBuffer )
+						\end{lstlisting}
+						liest Block in Puffer
+					\item
+
+						\begin{lstlisting}
+						int BlockFile::size()
+						\end{lstlisting}
+					\item
+						\begin{lstlisting}
+						void BlockFile::drop (int NumberOfBlocks)
+						\end{lstlisting}
+						invers zu append
+				\end{itemize}
+			\item
+				Anwendungsprogramme die blockorientierten Dateizugriff verwenden sind unabhängig von Hardware
+			\item
+				Für Programm ist Datei abstrakte Sicht auf Teile einer Platte $\Rightarrow$ \enquote{logische Platte/virtuelles Speichergerät}
+		\end{itemize}
+	\item
+		Übersicht siehe Foliensatz \href{IDB-2015WS-02-Dateiverwaltung.pdf}{2/17}
+\end{itemize}
+
+\section{Sätze}
+\begin{itemize}
+	\item
+		Bisher: Blöcke. Einheit des Transports zwischen Platte und RAM, Größe vom System vorgegeben
+	\item
+		$\Rightarrow$ neue Abstraktion: Satz
+\end{itemize}
+\subsection{Grundlegendes}
+\begin{itemize}
+	\item
+		Repräsentieren ein \enquote{Objekt} der Anwendung
+	\item
+		Größe wird von Anwendung bestimmt und ist variabel (sowohl von Satz zu Satz als auch einzelne Sätze im Laufe der Zeit)
+	\item
+		Satz hier nur Folge von Bytes, keine innere Struktur
+	\item
+		Satzdatei: Menge von Sätzen fester oder variabler Länge, Reihenfolge unbestimmt
+	\item
+		Typischerweise mehr als ein Satz in einem Block
+	\item
+		Feste satzlänge als Sonderfall möglich, dann auch Ausnutzen (kein Längenfeld), feste Zahl von Sätzen pro Block, ungenutzter Speicherplatz am Ende eines Blockes
+	\item
+		Variable Satzlänge: Zahl der Sätze unterschiedlich in Blöcken, Sätze umsortieren (sind Menge!), Speicherplatz effizient nutzen
+	\item Sequentielle Satzdatei: Folge von Sätzen fester/variabler Länge; Schreibreihenfolge= Abspeicherungsreihenfolge = Lesereihenfolge; sequenzieller Zugriff, kein wahlfreier Zugriff, kein Ändern eines Satzes (da i.Allg. mit Längenänderung)
+\end{itemize}
+\subsection{Zugriffsoperationen}
+\begin{itemize}
+	\item Öffnen:
+
+		\begin{lstlisting}
+		SeqRecordFile::SeqRecordFile (
+		char *Filename, char Mode, int *RecLength )
+		\end{lstlisting}
+		Satzlänge beim Schreiben Eingabeparam, beim Lesen Ausgabeparam
+	\item
+
+		\begin{lstlisting}
+		void SeqRecordFile::read-next (
+		int *RecordLength, char *RecordBuffer)
+		\end{lstlisting}
+	\item
+		\begin{lstlisting}
+		void SeqRecordFile::write-next (
+		char *RecordBuffer, int RecordLength )
+		\end{lstlisting}
+	\item
+		Anwendungsprogramm ist Blockunabhängig!
+	\item Nachteile: kein Direktzugriff auf Sätze, Gefahr der Fragmentierung der Datei
+\end{itemize}
+\subsection{Puffer}
+\begin{itemize}
+	\item
+		Block ist weiterhin Einheit des Transfers zwischen  Platte und RAM
+	\item
+		Immer ganzen Block holen - enthält meistens noch mehr interessante Sätze
+	\item
+		Block erst auf Platte schreiben wenn voll
+\end{itemize}
+\subsubsection{Wechselpuffertechnik}
+\begin{itemize}
+	\item Verwendung von zwei Blockpuffern, die abwechselt genutzt werden können, beim Lesen prefetching im anderen Puffer machen
+	\item
+		Ist interne Optimierung, unsichtbar für höhere Schichten
+\end{itemize}
+
+\subsubsection{Allgemeiner Dateipuffer}
+\begin{itemize}
+	\item
+		Verallgemeinerung: beliebig viele Puffer, evt. auch ganze buffer frames
+	\item
+		spart Zugriffsarmbewegungen
+	\item
+		Persistenz wird (zunächst) Problem - nach Schreiben eines Satzes gammelt er erst mal nur im RAM rum
+\end{itemize}
+\subsubsection{Fazit}
+\begin{itemize}
+	\item
+		primitiv, aber viel Kapselungs- und Optimierungspotential
+	\item Übersicht siehe Folie \href{run:IDB-2015WS-03-Saetze.pdf}{3/21}
+\end{itemize}
+\subsection{Direktzugriff auf Sätze}
+\begin{itemize}
+	\item
+		flexiblerer Ansatz ist gebraucht $\Rightarrow$ Arbeit mit einzelnen Sätzen!
+	\item
+		Annahmen: variable Satzlänge (allg Fall), Reihenfolge der Abspeicherung $\neq$ Einfügereihenfolge $\Rightarrow$ darf verlorengehen
+	\item Satzadresse:
+		\begin{itemize}
+			\item
+				wird beim Einfügen vom DBMS zugeteilt, später zum Zugriff verwenden
+			\item
+				eindeutig u. unveränderlich (auch dann wenn Sätze gelöscht, verschoben, eingefügt werden)
+		\end{itemize}
+\end{itemize}
+\subsubsection{TID}
+\begin{itemize}
+	\item
+		Hilfsstruktur: Array mit Byte-positionen aller Sätze im Block
+	\item
+		Satzadresse ist Paar aus Blocknummer und Index in diesem Feld
+	\item Löschen: Eintrag im Array wird invalid markiert; andere Sätze können verschoben werden, nur Array muss angepasst werden, Satzadressen bleiben stabil (so wie Nord-Korea)
+	\item Ändern: Länge kann sich ändern: Schrumpfen (alles verschieben und Array anpasen) oder zu groß für Block werden (Verschieben des ganzen Satzes in anderen Block$\rightarrow$ überlaufbehandlung)
+	\item Überlaufbehandlung: Im alten block bleibt an Stell des Satzes Satzadresse des neuen Blocks, bei weiterer verlagerung wird nur erste Indirektion umgebogen, maximaltiefe=1
+\end{itemize}
+\subsubsection{Direkte Satzdatei}
+\begin{itemize}
+	\item
+		Zugriff auf beliebige Sätze möglich
+	\item
+		Operationen:
+		\begin{lstlisting}
+		RecAdr insert(char *RecBuf, int RecLen)
+		void read(RecAdr adr, char *RecBuf, int *RecBuf, int *RecLen)
+		void modify(RecAdr adr, char* RecBuf, int RecLen)
+		void delete(RecAdr adr)
+		\end{lstlisting}
+	\item
+		Freispeicherverwaltung noch sinnvoll. Entweder am Anfang jedes Blockes \#freeBytes oder Freispeichertabelle am Anfang der Datei (Suche nach Freispeicher sehr schnell, aber Tabelle muss mitgeändert werden (damit mindestens zwei Blöcke bei entsprechenden Operationen), neue Blöcke an Datei anhängen schwierig
+	\item
+		Sequentielles Lesen immer noch möglich, aber System entscheidet über Abspeicherungsreihenfolge
+	\item
+		Übersicht siehe Folie \href{run:IDB-2015WS-03-Saetze.pdf}{3/31}
+\end{itemize}
+\section{Schlüsselzugriff}
+\begin{itemize}
+	\item
+		TIDs sind künstlich, haben nichts mit Anwendung zu tun (wie Telefonnummer)
+	\item
+		Besser wäre: über Inhalt (bestimmte Felder) zugreifen zu können, assoziativer Zugriff
+	\item
+		Sequentielle und direkte Satzdatei können das nicht, einzige Möglichkeit: \enquote{Scan}, alles durchsehen $\Rightarrow$ neue Hilfsstrukturen!
+\end{itemize}
+\subsection{Hashing}
+\begin{itemize}
+	\item
+		Berechnung der Adresse aus Schlüssel dann direktes Lesen des Satzes; Berechnung der Blocknummer genügt, Suche im Block einfach
+	\item
+		Vorraussetzungen: maximale \#Sätze abschätzbar (zulässige Blocknummern wissen); genug Blöcke von Anfang an (genannt \enquote{Buckets})
+	\item
+		Hashfunktion:
+		\begin{itemize}
+			\item
+				Ziel: gleichmäßige Verteilung der Sätze, aber Kollisionen bis zu gewissem Grad erwünscht (mehr als ein Satz pro Bucket/Block)
+			\item Auswahl der Hashfunktion wichtig, hängt von Verteilung der Schlüssel ab
+			\item
+				Wenn nicht bekannt: Divisions-Rest-Verfahren beschte! $h(k) = k \mod q$, k Schlüssel, q Anzahl Buckets
+			\item
+				Überlauf kann trotzdem passieren:
+				\begin{itemize}
+					\item
+						Open Addressing: Ausweichen auf Nachbar-Buckets in festgelegter Reihenfolge: +kein zusätzlicher Speicher, -beim löschen überläufer zurückholen, -zusätzliche Überläufe in Nachbarbuckets
+					\item
+						Overflow-Buckets (mit \enquote{Seperate Chaining}): Anlegen spezieller Überlaufbuckets mit Verkettung: -Speicher, +kein Mischen von Sätzen, +Nachbarbuckets werden in Ruhe gelassen
+				\end{itemize}
+			\item
+				Hashfunktion nur intern verfügbar, Admin nicht Benutzer wählt aus
+			\item
+				Admin kann reorganisieren, ohne dass Anwendungen betroffen sind
+			\item Operationen:
+				\begin{lstlisting}
+				void insert ( char *RecBuf, int RecLen, char *KeyVal)
+				char *read (char *KeyVal, int *RecLen)
+				void modify-key (char *OldKeyVal, char *NewKeyVal)
+				\end{lstlisting}
+				Rest wie vorher auch.
+			\item
+				Wenn Schlüssel nicht eindeutig: gefundene Sätze einzeln abrufen (mit Leseposition), mit anderen Feldern richtigen Satz identifizieren
+			\item
+				Bewertung: +schneller Zugriff über Schlüssel (1-2 Blockzugriffe), -Sätze gemixt, -Speicherplatz im voraus!, -Ordnung nur nach einem Schlüssel
+		\end{itemize}
+	\item
+		Virtuelles Hashing
+		\begin{itemize}
+			\item
+				Fortlaufende Reorganisation der Bucket-Folge während Einfügen und Löschen
+			\item
+				Gleichzeitig alte Hashfunktion (für kleinere Zahl von Buckets) und neue Hash-Funktion (für größere Zahl) benutzen: neue Funktion muss Buckets die alte Funktion auf ein Bucket abgebildet hat auf zwei Buckets abbilden
+			\item
+				mit $q$ Buckets beginnen, jeder mit $b$ Sätzen (Kapazität $q\times b$)
+			\item
+				Belegungsfaktor $\beta = \text{Anzahl gespeicherter Sätze}/(q\times b)$
+			\item
+				Verwendung eines Schwellwerts $\alpha$ für Belegungsfaktor. Wenn $\beta > \alpha$: Menge Buckets vergrößern
+			\item
+				Erster Ansatz: VH1
+				\begin{itemize}
+					\item
+						Wenn $\beta > \alpha$ auf einen Schlag q, 2q, 4q neue Blöcke belegen
+					\item
+						Komplettes Umspeichern der Sätze verzögern: Erst wenn beim Einfügen in Bucket i(<q) Überlaufbucket benötigt wird Rehash der Sätze dieses Buckets inkl. Überläufer mit h2, Bit i in Bitliste setzen
+				\end{itemize}
+			\item
+				Zweiter Ansatz: Lineares Hashing
+				\begin{itemize}
+					\item Wenn $\beta > \alpha$ einen neuen Bucket hinten anfügen, Bucket auf dem Positionszeiger p steht aufteilen (auch ohne Überlaufbucket)
+					\item
+						Immer zuerst h1 anwenden, falls Ergebnis $< p$: h2 verwenden
+					\item
+						Nachdem Bucket q-1 aufgeteilt wurde: $p=0$, h1 wird nicht mehr benötigt, später h2 u. h3
+					\item Wächst Dynamisch, einzige Hilfsstruktur: Positionszeiger (nächstes zu splittendes Bucket)
+					\item
+						Aber: keine Möglichkeit überlaufsätze zu vermeiden, auch bei vielen Überlaufsätzen ist Datei überbelegt und sollte erweitert werden
+				\end{itemize}
+		\end{itemize}
+\end{itemize}
+
+
+\subsection{B-Bäume}
+\begin{itemize}
+	\item
+		Ausgangspunkt Binäre Such-Bäume (sind aber unzureichend, zu viele Blockzugriffe bei Abstieg
+	\item
+		B-Baum: Mehrweg-Baum, jeder Knoten entspricht einem Block
+	\item
+	Aufbau eines B-Bam-Knotens: $\begin{bmatrix}n & P0 & K1 & D1 & P1 & \dots & K2k&D2k &P2k \end{bmatrix}$\\
+		n Anzahl verwendeten Einträge ($k\leq n \leq 2k$, bzw. in der Wurzel $1 \leq n \leq 2k$), (Ki, Di, Pi) sind ein Eintrag:
+		\begin{itemize}
+			\item Ki: Schlüsselwert
+			\item Di: Datensatz
+			\item Pi: Zeiger auf den Nachfolgeknoten (=Blocknummer)
+		\end{itemize}
+	\item
+		Alle Schlüsselwerte im Unterbaum auf den P0  zeigt $\leq K1$
+	\item
+		Alle Schlüsselwerte im Unterbaum auf den Pi zeigt $> Ki \wedge \leq Ki+1$
+	\item
+		Beispiel siehe Folie \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/5}
+	\item
+		k errechnet sich aus Blockgröße: 2k ist maximale Zahl von Einträgen pro Block
+	\item
+		h Höhe des Baums, Anzahl der Ebenen
+	\item
+		Eigenschaften eines B-Baums:
+		\begin{itemize}
+			\item
+				Jeder Pfad vom Wurzelknoten zu Blattknoten hat Länge h-1: Baum ist perfekt Balanciert
+			\item
+				Jeder Knoten (Ausnahme: Wurzelknoten und Blattknoten) hat mindestens k+1 Nachfolger, jeder Block mindestens halb voll $\Rightarrow$ Speicherplatzausnutzung > 50\%
+			\item
+				Wurzelknoten ist entweder Blattknoten oder $\geq 2$ Nachfolger
+			\item
+				Jeder Knoten höchstens 2k+1 Nachfolger (mehr passt ja nicht in Block)
+		\end{itemize}
+	\item
+		Suche im B-Baum:
+		\begin{itemize}
+			\item
+				Beginne im Wurzelknoten, Knoten von links nach rechts durchsuchen:
+			\item
+				Ki vergleichen
+			\item
+				$Ki > x$: Suche in Wurzel des an Pi-1 hängenden Unterbaums fortetzen
+			\item
+				$Ki < x$: Vergleich mit Ki+1 wiederholen
+			\item
+				$Kn < x$: Suche im Unterbaum von Pn fortsetzen
+			\item
+				Falls gesuchter Wert in Blattknoten nicht gefunden, Suche abbrechen, Schlüssel nicht vorhanden
+		\end{itemize}
+	\item
+		Einfügen:
+		\begin{itemize}
+			\item
+				Nur in Blattknoten, d.h. zunächst Abstieg durch Baum wie bei Suche, dann im gefunden Blattknoten entsprechend Sortierreihenfolge einfügen
+			\item
+				Falls Blattknoten schon voll (enthält 2k Sätze): Split
+			\item
+				die 2k+1 Sätze aufteilen (in sortierordnung)
+			\item
+				Ersten k Sätze im ersten (linken) Knoten
+			\item
+				Letzten k Sätze im zweiten (rechten) Knoten
+			\item
+				mittleren (k+1ten) Satz als neuen Diskriminator, d.h. als Verzweigungsinformation bei der Suche, in den Knoten eine Stufe höher einfügen, der auf den Blatknoten verweist
+			\item
+				Falls übergeordnete Ebene auch überläuft: Split auf der Ebene wiederholen
+			\item
+				Split des Wurzelknotens: Erzeugung von zwei neuen Knoten, Baum wächst um 1 (Siehe Folie \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/10} und \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/11})
+		\end{itemize}
+	\item
+		Dynamische Reorganisation, baum immer balanciert, speicherplatzausnutzung garantiert $\geq 50\%$, bei gleichverteilter Einfügung $\ln 2 \approx 70\%$
+	\item
+		Löschen:
+		\begin{itemize}
+			\item
+				Siehe \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/13} - \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/16}
+			\item
+				Suche zu löschenden Knoten
+			\item
+				Falls S in Blattknoten, löschen, evt. Unterauf behandeln
+			\item Falls S in innerem Knoten, untersuche rechten und linken Unterbaum
+			\item
+				Betrachte Blattknoten mit direktem Vorgänger S' von S und Blattknoten mit direktem Nachfolger S'' von S (größter Wert, bzw. kleinster Wert in den Unterbäumen)
+			\item
+				Wähle den aus, der mehr Elemente hat, falls beide gleich viel zufällig
+			\item
+				Ersetze zu löschenden Schlüssel S durch zuvor gewähltes S' bzw. S''
+			\item
+				Lösche S' bzw. S'' im gewählten Blattknoten, behandle evt. Unterlauf
+			\item
+				Unterlaufbehandlung: Mischen des Unterlaufknotens mit seinem Nachbarknoten und dem darüber liegenden Diskriminator (split rückwärts)
+			\item
+				Evt. nach oben hin fortsetzen
+			\item
+				Wird die Wurzel erreicht kann der Baum in der Höhe um 1 schrumpfen, evt. kommt es auch zu Überlauf, dann split
+		\end{itemize}
+
+
+\end{itemize}
+\subsection{Variante: B*-Bäume}
+\begin{itemize}
+	\item
+		Alle Sätze (Schlüssel + TIDs) werden in Blattknoten abgelegt, innere Knoten nur noch Verzweigungsinformation
+	\item
+		Sätze auf Blattebene sind sortiert
+	\item
+		Operationen auf B*-bäumen siehe \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/22} - \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/27}
+	\item Vergleich B und B*-Baum siehe \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/28}
+	\item
+		Die Payload im Baum kann sein: ein Datensatz, eine Liste von Datensätzen (mit gleichem Schlüssel), eine (Liste von) Satzadresse
+\end{itemize}
+\subsection{Bitmap-Index}
+\begin{itemize}
+	\item
+		B-Bäume und Hashing sinnvoll für Schlüssel mit hoher Selektivität. Faustregel Grenztrefferrate 5\%. Wenn mehr Treffer lohnt sich Aufwand für Indexzugriff nicht mehr
+	\item
+		Für Schlüssel mit wenig Selektivität (z.B. geschlecht): Bitmap machen.
+	\item
+		Vorraussetzung: feste Reihenfolge der Sätze
+	\item
+		Bitwert 1 heißt: der Schlüssel hat im Satz den Wert, zu dem die Liste gehört, 0 heißt: anderer Wert
+	\item
+		Interessant bis zu ca. 500 verschiedenen Werten
+	\item
+		Bei kleinen Wertigkeiten nur sinnvoll, wenn Attribut oft in Konjunktion mit anderen indizierten Attributen auftritt (z.B. Geschlecht u. Wohnort), das ist auch Hauptvorteil
+	\item
+		Indexgr"o"se nicht problematisch, gerade höherwertige Indizes (dann dünn besetzt) gute Kompressionsverfahren verfügbar, z.B. RLE
+	\item
+		Zugriffsoperatoren bei allen Index-strukturen die selben: Entscheidend ist Zugriff über Schlüssel, nicht die Realisierung
+	\item
+		Art von Datenunabh"angigkeit: Datenstruktur-Unabhängigkeit  (oder Speicherungsstruktur-Unabhängigkeit)
+\end{itemize}
+
+\subsection{Primär- und Sekundär Organisation}
+\begin{itemize}
+	\item
+		Primärorganisation: Speicherung der Sätze selbst - kann sequentiell, direkt oder über Schlüssel sein
+	\item
+		Sekundärorganisation: verweist auf andere Sätze, die in beliebiger Primärorganisation gespeichert wurden (wenn diese direkten Zugriff auf einzelne Sätze ermöglicht (wenn diese direkten Zugriff auf einzelne Sätze ermöglicht)
+	\item
+		1 Primärorganisation, beliebig viele sekundär Organisationen
+	\item
+		eine Datei für Sätze selbst, für jede Sekundär-Organisation jeweils eine Datei
+	\item
+		Index über Primärschlüssel muss nicht die Primär-Organisation sein
+	\item
+		Zusamenfassung \href{run:IDB-2015WS-05-Schluessel-Teil-2.pdf}{5/41}
+\end{itemize}
+
+\section{Puffer}
+
+\begin{itemize}
+	\item
+		Im Hauptspeicher Platz für n Blöcke, heutzutage Größenordnung $10^4 - 10^6$
+\end{itemize}
+\subsection{Blockzugriffe}
+\begin{itemize}
+	\item
+		Sogenannter logischer Zugriff:
+		\begin{itemize}
+			\item
+				Entweder Block bereits im Puffer
+			\item
+				Oder Einlagern des Blocks, dabei Verdrängung eines anderen Blocks: ist der geändert worden? auf die Platte zurück schreiben. Nicht geändert worden? direkt überschreiben
+			\item
+				Welcher Block wird verdrängt? nach Alter, Benutzungshäufigkeit, FIFO, LFU?
+			\item
+				LRU (Least recently used), Alter seit dem letzten Zugriff. Prinzipiell sehr gut, aber auch teuer
+			\item
+				CLOCK (Second chance)
+				\begin{itemize}
+					\item LRU-Verhalten mit einfacher Implementierung: Blöcke haben \enquote{Benutzt}-Bit. Bei Verdrängung zyklische Suche mit dem Auswahlzeiger: ist Bit = 1, wird auf 0 gesetzt, nächster Block; ist Bit = 0, Block wird ersetzt: Block \enquote{überlebt} mindestens zwei Zeigerumläufe.
+				\end{itemize}
+			\item
+				Wichtige Restriktion: Blöcke die noch benutzt werden sind nicht ersetzbar (Unterschied zu Paging)
+		\end{itemize}
+
+\end{itemize}
+
+\subsection{Schnittstelle einer Pufferverwaltung}
+\begin{itemize}
+	\item
+		Ersetz-/Einbringstrategie vor Benutzer/höheren Schichten verbergen
+	\item
+		Zugänglich nur über folgende Operationen:
+		\begin{lstlisting}
+		char *Buffer::fix (
+		BlockFile File, int BlockNo, char Mode );
+
+		void Buffer::unfix (char *BufferAddress );
+		\end{lstlisting}
+		Mode: r/w?
+	\item
+		Auch leerer Block muss mit fix in den Puffer kommen (natürlich nicht von Platte, aber evt. Verdrängung etc)
+\end{itemize}
+
+\subsection{Fehlersituation}
+\begin{itemize}
+	\item
+		Irgendwas ist kaputt: Hardware, Stromversorgung...
+	\item
+		Hauptspeicher ist mit Puffer weg, manches steht schon auf Platte, manches war noch im Puffer $\Rightarrow$ inkonsistenzen
+	\item
+		bei der Verdrängung alte Blockinhalte auf Platte nicht überschreiben, sondern in andere Slots schreiben. Wenn \enquote{am Schluss} alle Blöcke auf der Platte sind ununterbrechbar von alt auf neu umschalten
+	\item
+		Einbringen: Ablegen auf einem nicht-flüchtigen Speicher, so dass es nach Ausfall verwendet werden kann
+	\item
+		Idee: Trennung in Block und Seite
+		\begin{itemize}
+			\item
+				Seite = Block im Puffer (genauso groß)
+			\item
+				Anwender arbeit nur noch mit Seiten, mehrere Blöcke für eine Seite (alter und neuer Inhalt jeweils)
+		\end{itemize}
+	\item Segment:
+		\begin{itemize}
+			\item
+				linearer, logischer, potenziell unendlicher, tatsächlich aber unendlicher Adressraum mit sichtbaren Seitengrenzen
+			\item
+				Entspricht Datei (=Folge von Seiten)
+			\item
+				Welche Blöcke für eine Seite?
+				\begin{itemize}
+					\item
+						direkt: aufeinanderfolgende Seiten auf aufeinanderfolgende Blöcke einer Datei - keine Hilfsstruktur
+					\item
+						indirekt: Flexibler, aber Array als Hilfsstruktur: Blocknummer zu jeder Seite
+					\item
+						Vergleich siehe \href{site:IDB-2015WS-06-Puffer.pdf}{6/17 - 18}
+				\end{itemize}
+		\end{itemize}
+	\item
+		Arten von Einbringstrategien:
+		\begin{itemize}
+			\item
+				Bei direkter Seitenzuordnung: bei Verdrängung aus Puffer ersetzt Seite genau den Block aus dem sie ursprünglich gelesen wurde (\enquote{update in place})
+				\begin{itemize}
+					\item
+						Vorteil: Einfach, nur ein Block pro Seite
+					\item
+						Nachteil: Keine Unterstützung im Fehlerfall (alte Zustand muss \emph{vor} dem Einbringen auf einen sicheren Speicher geschrieben werden (Write-Ahead Log)
+				\end{itemize}
+			\item
+				Bei indirekter Seitenzuordnung: Beim Verdrängen wird Block in irgendeinen freien Block geschrieben. Auch nach Hauptspeicherverlust konsistente Datenbank in alten Blöcken!
+				\begin{itemize}
+					\item
+						Wann werde ich alten Blöcke los?
+						\begin{itemize}
+							\item
+								Schattenspeicher: Inhalte aller Seiten eines Segments werden in einem Sicherungsintervall $\delta t$ in einem konsistenten Zustand unverändert gehalten\\
+								Sicherungspunkte sind segmentorientiert (für alle Nutzer des Segments gemeinsam) und bestehen aus: belegten Seiten, Seitentabelle $V_k$, Bitliste $M_j$ auf stabilem Speicher \\
+								Im Fehlerfall segmentorientieres Zur"uckgehen auf letzten Sicherungspunkt
+							\item
+								Twin Slots Prinzip: doppelter Speicherplatzbedarf, Seite braucht Versionsnummer, immer beide Bl"ocke lesen, bei "Anderungen den a"lteren "uberschreiben
+						\end{itemize}
+				\end{itemize}
+		\end{itemize}
+	\item
+		Zusammenfassung siehe \href{site:IDB-2015WS-06-Puffer.pdf}{6/25 u. 6/26}
+\end{itemize}
+
+
+\section{Zugriff auf DBs aus einem Programm}
+\subsection{Relationale Datenbanken}
+\begin{itemize}
+	\item
+		Intern: Satzschnittstelle (virtuelle Objekte Segment/Datei(=Menge von S"atzen) und Satz (=Folge von Bytes, evt. mit Schl"ussel) )
+	\item
+		OPs: seuqenzielles Lesen aller S"atze (eines Typs)
+	\item
+		Zugriff "uber Satzadresse/Schl"ussel
+	\item
+		N"achster Schritt: Unabh"angigkeit von Anwendungen und Organisationsformen (Segmenttypen) und Indexen
+		\begin{itemize}
+			\item
+				Schl"usselzugriff immer noch m"oglich, aber auch m"achtigere Operationen (Boolsche Ausdr"ucke, \enquote{Joins})
+		\end{itemize}
+	\item
+		Weitere Abstraktion: Dateien  $\rightarrow$ Relationen/Klassen; S"atzen $\rightarrow$ Tupeln/Objekten; Feldern $\rightarrow$ Attribute
+\end{itemize}
+
+\subsection{Programmzugriff}
+\begin{itemize}
+	\item
+		In C vom Precompiler in Funktionsaufrufe transformiert:
+		\begin{itemize}
+			\item
+				\begin{lstlisting}
+				exec sql <SQL-Anweisung>;
+				\end{lstlisting}
+			\item
+				Mehr siehe \href{site:IDB-2015WS-07-Programmzugriff.pdf}{7/5 ff.}
+			\item
+				Genormt, deswegen portabel
+			\item
+				Erlaubt Erzeugung von Zugriffsmodulen: Compile-time "Ubergabe an DBS, das kann optimieren. Zur Laufzeit nur noch ausf"uhren, call "uber einen Namen
+			\item
+				SQL Injektion nicht m"oglich
+			\item
+				Auch \enquote{Embedded SQL} genannt
+		\end{itemize}
+	\item
+		Auch: Call-level interface/Application-programming interface (CLI/API)
+		\begin{itemize}
+			\item
+				z.B.
+				\begin{lstlisting}
+				call DBS ("select ... from ... where ... ");
+				\end{lstlisting}
+			\item
+				Einfacher für Hersteller, mehr Arbeit f"ur Anwender
+			\item
+				Z.B. JDBC f"ur Java
+			\item
+				Mehr siehe \href{site:IDB-2015WS-07-Programmzugriff.pdf}{07-13 ff}
+			\item
+				Prepared Statements besser, meiste Verarbeitung passiert bei Erzeugung
+			\item
+				Stored Procedures noch besser: Analyse und OPtimierung dann nur einmalig
+			\item
+				Relativ elementar, Optimierung explizit, Gefahr durch SQL-Injection
+		\end{itemize}
+
+
+\end{itemize}
+
+
+\subsection{O/R-Mapping}
+\begin{itemize}
+	\item
+		F"ur OO-Programmiersprachen
+	\item
+		Konfigurationsdateien (XML) sagen welche Teile von Objekt in Relation gespeichert werden
+	\item
+		Transfer der Daten zwischen Datenbank und Anwendung automatisch
+\end{itemize}
+
+
+
+
+\section{Transaktionen}
+\begin{itemize}
+	\item
+		Probleme:
+		\begin{itemize}
+			\item
+				Problem: Datenbankanwendungsprogramm st"urzt ab (fehlerhaft oder von au"sen abgebrochen)  $\rightarrow$ Hauptspeicher des Programms ist weg, Daten im Puffer und auf Platte unvollst"andig und inkonsistent
+			\item
+				Notwendige Ma"snahmen: Puffer wegwerfen, Daten auf Platte von Hand bereinigen
+			\item
+				Oder: Systemfehler: DBMS oder BS st"urzt ab, Programm kann gar nichts daf"ur
+			\item
+				War vielleicht sogar schon fertig, aber Daten nur im Puffer $\rightarrow$  Puffer ist weg, alles inkonsistent und bl"od
+			\item
+				Alle Programme die gerade liefen von Hand nachvollziehen, kl"aren ob Ergebnisse vollst"andig auf Platte und welche wiederholt werden m"ussen
+			\item
+				er: Ger"atefehler: "Anderungen auf Platte verloren
+			\item
+				Notwendige Ma"snahmen: Neue Platte, Backup einspielen, alle "Anderungen seit Backup wiederholen
+
+		\end{itemize}
+	\item
+		Erw"unschte Zust"ande der Daten auf Platte:
+		\begin{itemize}
+			\item
+				Physische Konsistent:
+				\begin{itemize}
+					\item
+						Korrektheit der Speicherungsstrukturen
+					\item
+						Verweise und Addressen korrekt
+					\item
+						Indexe sind konsistent mit Prim"ardaten
+				\end{itemize}
+			\item
+				Logische Konsistenz
+				\begin{itemize}
+					\item
+						Korrektheit der Dateninhalte, stellen (Teil der) reale(n) Welt dar
+					\item
+						Bedingugen des Datenmodells (Prim"arschl"ussel etc) und Assertions erf"ullt
+				\end{itemize}
+		\end{itemize}
+	\item
+		Annahmen:
+		\begin{itemize}
+			\item
+				vollst"andig ausgef"uhrte Datenbank-Operationen hinterlassen physisch konsistenten Zustand (DBMS ist korrekt)
+			\item
+				vollst"andig ausgef"uhrte Anwendungsprogramme hinterlassen logisch konsistenten Zustand (Programmier hat korrekt gearbeitet)
+			\item
+				Nach Fehlerfall weder logisch noch physisch konsistent
+		\end{itemize}
+	\item
+		Unser Ziel: Systemunterst"tzung zur Recovery nach Fehlerfall
+		\begin{itemize}
+			\item
+				Entweder: Backward Recovery - R"uckgangigmachen der bereits ausgef"uhrten "Anderungen
+			\item
+				Oder Forward Recovery: Wiederholen verlorengegangener "Anderungen
+			\item
+				Daf"ur brauchen wir Logging im laufenden Betrieb
+		\end{itemize}
+\end{itemize}
+
+
+\subsection{Transaktion}
+\begin{itemize}
+	\item
+		Transaktion(TA): Folge von DB-Operationen, vom Anwender definiert: logisch konsistenter Zustand $\rightarrow$  logisch Konsistenter Zustand
+	\item
+		Bei Fehler vor Ende TA m"ussen "Anderungen, die eine TA bereits gemacht hat r"uckg"angig gemacht werden, Zustand vor Beginn wieder herstellen. Datenbestand sieht aus als ob TA nie gestartet w"arer
+	\item
+		Fehler nach Ende TA: durch Fehler verlorengegangene Ergebnisse transparent wiederherstellen
+	\item
+		Aufgabe des Anwenders dann nur noch Anfang (implizit durch Beginn der DB-Operationen) und Ende (\lstinline$commit$ oder \lstinline$abort$) definieren
+	\item
+		TA ist logische Arbeitseinheit, gleichzusetzen mit SQL Befehlen (innerhalt TA vor"ubergehend lgisch inkonsistente Zust"ande)
+	\item
+		Ziel: Transaktionsmanager garantiert entweder vollst"andige Ausf"uhrung von TA oder Wirkungslosigkeit der gesamten TA, TAs sind \emph{atomar}
+	\item
+		Mehrbenutzerbetrieb: Solange TA l"auft darf niemand sonst von ihr durchgef"uhrte "Anderungen benutzen! TA T1 sieht nur Zustand vor oder nach Transaktion T2
+	\item
+		TAs m"ussen synchronisiert werden $\rightarrow$  fiktiver Einbenutzerbetrieb f"ur jede Transaktion auch f"ur rein lesende Zugriffe
+	\item
+		\enquote{ACID}-Eigenschaften:
+		\begin{itemize}
+			\item
+				Atomicity
+			\item
+				Consistency: erfolgreiche TA $\rightarrow$ Konsistenbedingungen werden eingehalten
+			\item
+				Isolation: TAs sind isoliert voneinander, benutzen keine inkonsistenten Zwischenergebnisse anderer TAs
+			\item
+				Durability: Ergebnisse m"ussen persistent sein, bevor Erfolg an Anwendung gemeldet werden darf
+		\end{itemize}
+\end{itemize}
+
+\subsection{Programmierung von TAs}
+\begin{itemize}
+	\item
+		Wenn Programm nur eine TA ausf"uhrt und scheitert kann es einfach nocheinmal ausgef"uhrt werden
+	\item
+		Wenn Programm mehrere Tas ausf"uhrt, muss erneute Ausf"uhrung modifiziert werden: erfolgreiche TA darf nicht wiederholt werden!
+	\item
+		Beispiel \href{site:IDB-2015WS-08-Transaktionen.pdf}{08/25 ff}
+\end{itemize}
+
+
+
+\section{Speicherung von Tupeln und Relationen}
+\begin{itemize}
+	\item
+		Viele M"oglichkeiten Relationen mit Mitteln der darunterliegenden Schicht abzuspeichern
+\end{itemize}
+
+\subsection{Speicherung von Tupeln und S"atzen}
+\begin{itemize}
+	\item
+		Sätze bestehen aus Feldern (mit Namen, Typ, feste/variable L"ange)
+	\item
+		Systemkatalog: Informationen "uber Felder und Reihenfolge
+	\item
+		Satztyp: Menge von S"atzen mit gleicher Struktur (z.B. Tupel derselben Relation)
+		\begin{itemize}
+			\item
+				Jeder Satz ein Satztyp
+			\item
+				Zuordnung zu Segmenten: n:1, manchmal n:m
+		\end{itemize}
+	\item
+		Annahmen: 
+		\begin{itemize}
+			\item
+				Variable L"ange, Satz sollte vollst"andig in einer Seite ablegbar sein, Reihenfolge der Felder unwichtig
+		\end{itemize}
+	\item
+		Anforderungen an Tupelspeicherung
+		\begin{itemize}
+			\item
+				Speicherplatzeffizienz (undefiniete Werte gar nicht speichern, wenige Hilfsstrukturen, variable L"ange)
+			\item
+				Direkter Zugriff auf Felder
+			\item
+				Flexibilit"at (Hinzuf"ugen von Feldern bei allen S"atzen, L"oschen eines Feldes aus allen S"atzen)
+		\end{itemize}
+	\item
+		Speicherungsstuktur in S"atzen:
+		\begin{itemize}
+			\item
+				Konkat von feldern fester L"ange (speicher meh)
+			\item
+				Zeiger im Vorspann (Unflexibel beim hinzuf"ugen von Feldern)
+			\item
+				Eingebette L"angenfelder (Keine direkte Berechnung der Satzinternen Adresse eines Feldes aus Katalogdaten m"oglich, aber dynamisch erweiterbar)
+			\item
+				Eingebette L"angenfelder mit Zeigern (Variabel lange Felder ans Ende legen, im festen Strukturteil Felder mit fester L"ange und Zeiger). Schaubild \href{site:IDB-2015WS-09-Speicherung.pdf}{09/9}
+			\item
+				Gibt noch mehr M"oglichkeiten: Tupel fragmentieren, Spaltenweise abspeichern (gut f"ur Data-Warehousing/analytische Auswertung, nicht so gut f"ur "Anderungen und Verb"unde, aufs Lesen hin optimiert) Mehr zu C-Store in \href{site:IDB-2015WS-09-Speicherung.pdf}{09/12-Ende}
+		\end{itemize}
+\end{itemize}
+
+
+\section{Anfrageverarbeitung}
+\begin{itemize}
+	\item
+		Bekommen mengenorientierten Zugriff, m"ussen auf satzorientierte Operatoren und Benutzung von Indexstrukturen Abbilden
+	\item
+		Schritte:
+		\begin{enumerate}
+			\item
+				Syntaxchecker
+			\item
+				Zugriffsberechtigung und Integritycheck
+			\item
+				Optimierung (wichtig!)
+			\item
+				Ausf"uhrung
+		\end{enumerate}
+	\item
+		Optimalit"at hinsichtlich: Durchsatz? Antwortzeit? Einhalten von Antwortzeitschranken?
+	\item
+		Aufteilung der Anfrageverarbeitung in:
+		\begin{itemize}
+			\item
+				Anfrageverarbeitung auf logischem DB-Prozessore, liefert Anfrageausf"uhrungsplan
+			\item
+				Anfrageausf"uhrung auf physischem DB-Prozessor, tats"achliche Ausf"uhrung
+		\end{itemize}
+
+	\item
+		Phasen der Anfrageverarbeitung:
+		\begin{itemize}
+			\item
+				Lexikalische und syntaktische Analyse, parser, erstellen eines Anfragebaums
+			\item
+				Semantische Analyse: Existenz und G"ultigkeit der referenzierten Relationen und Attribute, Namensaufl"osung, Konvertierung der Werte vom externen Format in interne Darstellung
+			\item
+				Zugriffs/Integrit"atskontrolle: Kontrolle von Formaten, ggf Konvertierung von Datentypen
+			\item
+				Standardisierung und Vereinfachung: Anfragebaum in Normalform bringen, Elimination von Redundanzen
+			\item
+				Restrukturierung und Transformation: Algebraische Verbesserung (heuristische Regeln $\rightarrow$ globale Verbesserung des Anfragebaums), nicht-algebraische Verbesserung (Transformation, logische Operatoren durch Planoperatoren ersetzen) Auswahl der g"unstigsten Planalternative
+			\item
+				Code-Generierung: erzeugt zwischencode und ausf"uhrbares Zugriffsmodul
+
+		\end{itemize}
+
+\end{itemize}
+
+\subsection{Interndarstellung einer Abfrage}
+\begin{itemize}
+	\item
+		Relationale Algebra definiert relationale logische Operatoren, mit denen wird Anfragebau/Operatorbaum gebaut
+		\begin{itemize}
+			\item
+				Selektion: Auswahl von Zeilen
+				\begin{itemize}
+					\item
+						SEL(R, pred)
+					\item
+						entspricht WHERE
+				\end{itemize}
+			\item
+				Projektion: Auswahl von Spalten
+				\begin{itemize}
+					\item
+						Proj(R,L) (mit L Menge von Tupelnamen)
+					\item
+						Eliminierung von Duplikaten
+					\item
+						Entspricht SELECT
+				\end{itemize}
+			\item
+				Kreuzprodukt: Konkat jedes Tupels einer Relation mit jedem Tupel einer anderen
+				\begin{itemize}
+					\item
+						Cross(R,S)
+					\item
+						Wird in FROM definiert (z.B. FROM Personen,Filme)
+				\end{itemize}
+			\item
+				Verbund: Konkat von Tupeln aus zwei Relationen die Bedingung erf"ullen
+				\begin{itemize}
+					\item
+						Join(R,S,pred), pred Pr"adikat "uber Attributen aus beiden Relationen
+					\item
+						Eigentlich schon Optimierung, da auch durch Kreuzprodukt und Selektion darstellbar
+					\item
+						Wird in FROM und WHERE Klausel definiert
+				\end{itemize}
+			\item
+				Mengenoperatoren
+				\begin{itemize}
+					\item
+						UNION(R,S)
+					\item
+						INTERSECT(R,S)
+					\item
+						EXCEPT(R,S)
+					\item
+						Auf logischer Ebene auch n-stellige Operatoren, k"onnen auf Sequenz von bin"aren zur"uckgef"uhrt werden
+				\end{itemize}
+			\item
+				Gibt auch Multimengen-orientierte Operatoren
+			\item
+				Weitere Operatoren, durch SQL dazugekommen:
+				\begin{itemize}
+					\item
+						DUP-ELIM(R)
+					\item
+						Aggregation
+					\item
+						GROUP(R,L,agg), L Gruppierungsattribute, agg Aggretion
+					\item
+						G-PROJ(R,L) mit L = (name1 = expr1, name2= expr2) Liste von Ausdr"ucken zur Berechnung von neuen Attributwerten
+					\item
+						SORT(R,L)
+					\item
+						OUTER-JOIN(R,S, pred, left|right|full)
+				\end{itemize}
+		\end{itemize}
+	\item
+		Operatorb"aume
+		\begin{itemize}
+			\item
+				Blattknoten "ublicherweise Relationen
+			\item
+				Knoten Operatoren der Rel.Algebra
+			\item
+				Gerichtete Kanten Datenfluss
+		\end{itemize}
+\end{itemize}
+
+
+\subsection{Standarrdisierung und Vereinfachung}
+\begin{itemize}
+	\item
+		Wahl einer Normalform: Konjunktive (A OR B OR ...) AND .... (..OR..OR) oder Konjunktive (A AND B ANd ..) OR ...(...AND..AND..)
+	\item
+		Eliminierung von Idempotenzen, leeren Relationen
+	\item
+		Nutzung von semantischen Integrit"atsbedingungen
+\end{itemize}
+
+
+\subsection{Restrukturierung}
+\begin{itemize}
+	\item
+		Viele Regeln:
+		\begin{itemize}
+			\item
+				n-fachen Verbund durch Folge von bin"aren Verb"unden ersetzen
+			\item
+				Verbund ist kommutativ und assoziativ
+			\item
+				Selektionen k"onnen zusammengefasst werden
+			\item
+				Projektionen k"onnen zusammengefasst werden
+			\item
+				Selektion und Projektion d"urfen vertauscht werden
+			\item
+				Selektion und Verbund d"urfen Vertauscht werden
+			\item
+				Selektion darf mit Vereinigung und Differenz vertauscht werden
+			\item
+				Selektion und Kreuzprodukt k"onnen zu JOIN zusammengefasst werden
+			\item
+				Gibt aber noch mehr
+		\end{itemize}
+	\item
+		Zwischenergebnisse m"oglichst klein halten
+	\item
+		Heuristik zum Restrukturieren:
+		\begin{itemize}
+			\item
+				Komplexe Verb"unde in bin"are zerlegen
+			\item
+				Selektionen mit mehreren Pr"adikaten zerlegen in Selektionen mit jeweils einem Pr"adikat Term
+			\item
+				Selektionen so fr"uh wie m"glich ausf"uhren
+			\item
+				Selektion und Kreuzprodukt zu JOIN zusammenfassen, wenn Pr"adikat Attribute aus beiden Relationen verwendet
+			\item
+				Einfache Selektionen wieder zusammenfassen (aufeinanderfolgende Selektionen derselben Relation gruppieren)
+			\item
+				Projektionen auch so fr"uh wie m"oglich ausf"uhren, hinunterschieben zu Bl"attern des Anfragebaums, dabei aber Duplikateliminierung vermeiden
+		\end{itemize}
+\end{itemize}
+
+
+\section{Relationale Operatoren}
+\subsection{Transformation}
+\begin{itemize}
+	\item
+		Grunds"atzliche Aufgabe: Ersetzen der logischen Operatoren (SEL(), PROJ(), JOIN(), \dots) durch Planoperatoren
+	\item
+		Teilprobleme:
+		\begin{itemize}
+			\item
+				Gruppierung direkt benachbarter Operatoren zur Auswertung durch einzelnen Planoperator (Verbund mit Selektion und/oder Projektion l"asst sich durch einen speziellen Planoperator gemeinsam ausf"uhren)
+			\item
+				Bestimmung der Verkn"upfungsreihenfolge bei Verbundoperationen(Minimierung der Zischenergebnisse, kleinsten (Zwischen-)Relationen immer zuerst verkn"upfen
+			\item
+				Erkennen gemeinsamer Teilb"aume
+		\end{itemize}
+	\item
+		Relationale Planoperatoren:
+		\begin{itemize}
+			\item
+				Unterprogramme/Komponenten des DMBS
+			\item
+				Parameter: Eingabe-Relationen, Indexstrukturen, Pr"adikate
+			\item
+				Vorraussetzungen: Vorhandensein bestimmter Speicherungsstrukturen (vor allem Indexe)
+			\item
+				Ergebnis: ganze Relation, n"achstes Tupel, n"achste n Tupel
+			\item
+				Haben Kosten (Zeit, Speicher, CPU)
+			\item
+				Gibt Ein-Variablen-Ausdr"ucke (Auswahl von Elementen aus einer Relation), Zwei-Variablen-Ausdr"ucke (\dots aus zwei Relationen) und k-Variablen-Ausdr"ucke (werden normalerweise in Ein- und Zwei-Variablen-Ausdr"ucke zerlegt
+		\end{itemize}
+
+	\item
+		Selektion:
+		\begin{itemize}
+			\item
+				Scan-Operators (Wahlweise mit Definition von Start/Stopp-Bedingungen und einfachen Suchargumenten
+			\item
+				Relationen-Scan (Sequenzielles Lesen aller Tupel einer Relation
+			\item
+				Index-Scan
+		\end{itemize}
+	\item
+		Projektion
+		\begin{itemize}
+			\item
+				Typischerweise mit im Planoperator von Sortierung, Selektion oder Verbund durchgef"uhrt
+		\end{itemize}
+
+	\item
+		Sortierung:
+		\begin{itemize}
+			\item
+				Erforderlich f"ur \lstinline$order by$
+			\item
+				Kann aber auch Joins, Gruppierung und Duplikateliminierung schneller machen
+			\item
+				Ist blockierend, kein Pipelining m"oglich
+			\item
+				I.Allg extern, Teilergebnisse m"usse auf Externspeicher ausgelagert werden
+		\end{itemize}
+	\item
+		Join "uber mehrere Relationen
+		\begin{itemize}
+			\item
+				Zerlegung in n-1 Joins
+			\item
+				$n!$ verschiedene Reihenfolgen m"glichn
+		\end{itemize}
+
+	\item
+		Join
+		\begin{itemize}
+			\item
+				Teuer und h"aufig
+			\item
+				Verschiedene Zugriffspfade (Relationen-Scan, Scans "uber Indexe (interessant: Sortierreihenfolge nach den gejointen Attributen
+			\item
+				Scans "uber zugeh"orige Selektionsattribute ($\neq$ Attributen "uber denen gejoint wird!), wenn daf"ur Index da ist
+			\item
+				Nested-Loop-Join
+				\begin{itemize}
+					\item
+						Annahme: S"atze in beiden Relationen sind nicht nach Joinattributen geordnet, keine Indexstrukturen "uber Joinattributen
+					\item
+						Algorithmus f"ur $\Theta$-Verbund
+						\begin{lstlisting}
+						Scan ueber S; //aeussere Schleife
+						//P(s.SA)=Selektion auf einer Relation
+						fuer jeden Satz s, fuer den P(s.SA) gilt: 
+						Scan ueber R; //innere Schleife
+						fuer jeden Satz r,
+						fuer den P(r.SA) AND (r.VA OP s.VA) gilt: (OP =, <=, < etc..)
+						uebernimm kombinierten Satz (r, s) in das Ergebnis;
+						\end{lstlisting}
+				\end{itemize}
+			\item
+				Komplexit"at $\mathcal{O}(n^2)$
+			\item
+				Falls Verbundattribut der zweiten Relation unique ist, kann Suche nat"urlich abgebrochen werden
+		\end{itemize}
+
+	\item
+		Nested Loop Join mit Indexzugriff
+		\begin{itemize}
+			\item
+				Annahme: Gibt Index "uber Verbundattributen bei beiden Relationen
+			\item
+				\begin{lstlisting}
+				Scan ueber S;
+				fuer jeden Satz s, fuer den P(s.SA) gilt:
+				ermittle ueber Ir(R.VA) alle Saete mit r.VA = s.VA;
+				ggf fuer jdes TID: hol Satz r;
+				fuer jeden Satz r, fuer den P(r.SA) gilt:
+				uebernimm kombinierten Satz (r,s) in das Ergebnis;
+				\end{lstlisting}
+			\item
+				Eigentlich wird seitenweise vorgegangen um mehrfachen Zugriff auf selbe Seitie zu vermeiden
+		\end{itemize}
+	\item
+		Sort-Merge Verbund
+		\begin{itemize}
+			\item
+				Zweiphasiger Algorithmus: Phase 1 (Sortierung von beiden Relationen nach Verbundattributen, dabei gleich Pr"adikate auf den Relationen ausfuehren), Phase 2(Gleichzeitiger Scan "uber beiden sortieren Relationen
+			\item
+				$\mathcal{O}(N \log n)$
+		\end{itemize}
+
+	\item Hashverbund
+		\begin{itemize}
+			\item
+				Durch immer gr"o"sere Hauptspeicher m"oglich
+			\item
+				Einfachster Fall (\enquote{Classic Hashing}):
+				\begin{itemize}
+					\item
+						Aufteilen der kleineren Relation in $p$ Abschnitte $R_i(1\leq i \leq p)$, so dass jeder der p Abschnitte in den verf"ugbaren Hauptspeicher passt (evt. Pr"adikat ausf"uhren, wenn vorhanden)
+					\item
+						Hashtabelle bauen (wird nach jedem Abschnitt wieder gel"oscht/neu aufgebaut)
+					\item
+						Scan "uber S, hashen nach Verbundattribut, durchf"uhrung des Verbundes
+				\end{itemize}
+			\item
+				$\mathcal{O}(p \times N)$, Idealfall R passt ganz in Hauptspeicher, $p = 1$
+			\item
+				Nachteil: eine Relation muss p-mal gelesen werden
+		\end{itemize}
+
+	\item
+		Duplikateliminierung:
+		\begin{itemize}
+			\item
+				Klassisch durch Sortieren und Gruppieren, aber auch durch Hashing m"oglich
+		\end{itemize}
+	\item
+		Grupperiung:
+		\begin{itemize}
+			\item
+				Durch Sortierung und Scan mit Aggregation pro Gruppe, aber auch wieder Hashing m"oglich (Abbildung auf Z"ahler, bisherige Summe, bisheriges Minimum/Maximum)
+		\end{itemize}
+
+\end{itemize}
+\subsection{Anfrageoptimierung}
+\begin{itemize}
+	\item
+		Zentrales Problem: Globale Optimierung zu aufw"andig  $\rightarrow$ Heuristiken!
+	\item
+		Ziel:
+		\begin{itemize}
+			\item
+				Maximierung des Outputs (Durchsatzmaximierung? in Transaktionen pro Sekunde?
+			\item
+				Minimierung der Ressourcennutzung?
+		\end{itemize}
+	\item
+		Kostenarten bei Anfrageoptimierung: (sind nicht unabh"angig voneinander!)
+		\begin{itemize}
+			\item
+				Berechnungskosten
+			\item
+				I/O-Kosten
+			\item
+				Speicherungskosten
+			\item
+				Bei verteilen DBS: Kommunikationskosten
+		\end{itemize}
+	\item
+		Erstellung von Ausf"uhrungspl"anen:
+		\begin{itemize}
+			\item
+				Eingabe: Algbraisch optimierter Anfragebaum, existierende Speicherungsstrukturen und Zugriffspfade, Kostenmodell
+			\item
+				Ausgabe: m"oglichst optimaler Ausf"uhrungsplan
+			\item
+				Annahmen: Datenelemente und Attributwerte sind gleichverteilt (im allg. falsch!) und Suchpr"adikate sind unabh"angig (auch falsch!)
+			\item
+				Vorgehensweise:
+				\begin{itemize}
+					\item
+						Generierung aller \enquote{vern"unftigen} logischen Ausf"uhrungspl"ane
+						\begin{itemize}
+							\item
+								Planoperatoren in verschiedenen Implementierungen
+							\item
+								Operationsreihenfolge (bei Mehrfachjoins) kann variiert werden
+							\item
+								Entstehung riesiger Suchr"aume bei komplexen Anfragen ($10^{23}$ m"ogliche Ausf"uhrungspl"ane bei Anfrage mit 15 Joins - $15!$(Reihenfolge)$\cdot3^{15}$ (versch. Planoperatoren) $\cdot 2^{15}$ (Index o. Tablescan)
+						\end{itemize}
+					\item
+						Vervollst"andigen der Ausf"uhrungspl"ane mit Metadaten (Sortierreihenfolge, Zugriffspfadmerkmale, statistische Informationen)
+					\item
+						Billigsten Ausf"uhrungsplan gem"a"s Kostenmodell ausw"ahlen
+				\end{itemize}
+			\item
+				Unterschiedliche Strategieklassen: 
+				\begin{itemize}
+					\item
+						voll-enumerativ
+					\item
+						beschr"ankt-enumerativ
+					\item
+						zufallsgesteuert (genetische Algorithmen und Strategien des \enquote{simulated annealing}
+				\end{itemize}
+			\item
+				Beispiel \href{site:IDB-2015WS-11-RelOperatore.pdf}{11/29 ff.}
+		\end{itemize}
+	\item
+		Berechnung der Kosten f"ur jeden Ausf"uhrungsplan
+		\begin{itemize}
+			\item
+				Kostenformel \#physische-Seitenzugriffe + W $\times$ \#Aufrufe-des-Zugriffssystems (W ist Verh"altnis f"ur Aufruf des Zugriffssystems (interne Satzschnittstelle) zum Aufwand f"ur Seitenzugriff)
+		\end{itemize}
+	\item
+		Wichtige Statistische Kenngr"o"sen:
+		\begin{itemize}
+			\item
+				\dots f"ur Segmente: $M_S$ (Anzahl der Datenseiten des Segments S, $L_S$(Anzahl der leeren Seiten in S)
+			\item
+				\dots f"ur Relationen: $N_R$ (Anzahl der Tupel in Relation R, $T_{R,S}$ Anzahl der Seiten in S mit Tupeln von R, $C_R$ (Cluster-Faktor, Anzahl der Tupel von R pro Seite)
+			\item
+				\dots pro Index I auf Attributen A einer Relation R: $j_I$ Anzahl der Attributwerte(Schl"usselwerte) im Index), $B_I$ Anzahl der Blattseiten (beim B*-Baum)
+		\end{itemize}
+	\item
+		Statistische Kenngr"o"sen m"ussten eigentlich gesammelt werden, so viele zus"atzliche Log-Operationen aber aufwendig, stattdessen: Periodische Neubestimmung durch Kommando (\lstinline$analyse table$ bei Oracle)
+
+	\item
+		Heuristik zur Absch"atzung des Selektivit"atsfaktors auf \href{site:IDB-2015WS-11-RelOperatore.pdf}{11/36 f.}
+	\item
+		Grenztrefferrate (ab wo sich ein Indexscan lohnt): 5\% (geringe Trefferrate $\overset{\wedge{}}=$ hoher Selektivit"at)
+\end{itemize}
+
+
+\section{Synchronisation}
+\begin{itemize}
+	\item
+		Arten von Konsistenz:
+		\begin{itemize}
+			\item
+				Datenbankkonistenz: Alle (auf der DB definierten) Konsistenzbedingungen sind erf"ullt
+			\item
+				Transaktionskonsisten/(operationeelle Ingetrit"at): Der nebenl"aufige Ablauf der Transaktionen ist korrekt
+		\end{itemize}
+	\item
+		Remember: ACID (atomicity, consistency, isolation, durability)
+	\item
+		L"osung: Serialisierung, Einbenutzerbetrieb. Dann aber m"oglicherweise lange Wartezeiten
+	\item
+		Stattdessen \enquote{virtuelle} serielle Ausf"uhrung (\enquote{logischer} Einbenutzerbetrieb)
+	\item
+		A posteriori(Serialisierbarkeitstheorie)/A priori(Sperrverfahren)
+	\item
+		Serialisierbarer Ablauf: Ein Schedule von TAs ist serialisierbar, wenn er zu irgendeinem seriellen Ablauf der in ihm enthaltenen Transaktionen "aquivalent ist.
+	\item
+		"Aquivalenz von Abl"aufen: \dots what
+\end{itemize}
+\subsection{Implementierungsmethoden}
+\begin{itemize}
+	\item
+		Einf"uhren von Locks f"ur Zugriffe auf Datenobjekte f"ur jedes benutzte Datenobjekt zentral in einer Sperrtabelle
+	\item Arten von Sperren:
+		\begin{itemize}
+			\item
+				X (exclusive)
+			\item
+				S (shared)
+		\end{itemize}
+
+	\item Wann holt man sich locks?
+		\begin{itemize}
+			\item
+				Statisch: alles zu Beginn holen, man muss alles sperren was man brauchen k"onnte
+			\item
+				Dynamisch: locks nach Bedarf ziehen, m"oglicherweise deadlocks
+		\end{itemize}
+	\item
+		Locks erst am Ende der TA freigeben
+	\item
+		Sperrgranularit"at:
+		\begin{itemize}
+			\item
+				Tupel: nicht immer effizient, manche TAs alle Tupel einer Relation, gro"se Sperrtabellen, Phantomproblem (werden nur existierende Tupel gesperrt, andere TA kann Tupel einf"ugen)
+			\item
+				Hierarchisch:
+				\begin{itemize}
+					\item Synchronisation langer TAen auf Relationenebene
+					\item
+						Synchronisation kurzer TAen auf Tupelebene
+				\end{itemize}
+
+			\item
+				Anwartschaftssperren
+				\begin{itemize}
+					\item
+						Auf h"oherer Ebene werden auch noch \enquote{intention locks} gezogen, um anzuzeigen, dass auf tieferer Ebene locks gezogen sind (Intention-share lock IS/Intention exclusive lock IX). Muss auf allen Vorg"angerknoten im Hierachiebaum passieren, ist dort schon richtiges Lock gezogen kann kein Intention Lock mehr gezogen werden
+					\item
+						SIX (share and intention exclusive): Sperrt Objekt im S-Modus, auf Ebenen darunter nur noch IX oder X locks. Macht Sinn wenn alle Tupel einer Relation gelesen und nur einige davon ge"andert werden (X auf Relation w"are zu restriktiv, IX auf Relation m"usste jedes Tupel noch extra S locked werden. Passiert hier implizit
+					\item
+						Kompabilit"atsmatrix siehe \href{site:IDB-2015Ws-12-Synchronisation.pdf}{12/27}
+				\end{itemize}
+		\end{itemize}
+	\item
+		Probleme bei Locks:
+		\begin{itemize}
+			\item
+				M"oglicherweise lange Wartezeiten (Hotspots bei wichigen Zugriffspfaden o."a.), m"oglicherweise gro"se Sperrtabellen. 
+		\end{itemize}
+	\item
+		Deadlocks bl"od\\
+		M"ogliche L"osungen:
+		\begin{itemize}
+			\item
+				Timeout (Bestimmung des richtigen Werts problematisch)
+			\item  Prevention (nicht praktikabel f"ur DBMS)
+			\item  Avoidance (Potenzielle Deadlocks im vorraus erkennen und vermeiden - Laufzeit unterst"utzung notwendig
+			\item  Detection (Explizites F"uhren eines wait-for graphen
+				darin zyklensuche
+		\end{itemize}
+\end{itemize}
+
+
+\section{Recovery}
+\subsection{Protokollierung und Wiederherstellung allgemein}
+\begin{itemize}
+	\item
+		Sammeln redundanter Infos w"ahrend normalen Betriebs: Logging
+	\item
+		Mechanismen zur Wiederherstellung des letzten konsistenten Zustands: Recovery
+	\item
+		Physische Konsistenz: Korrektheit der Speicherungsstrukturen, "Anderungsoperationen sind vollst"andig ausgef"uhrt
+	\item
+		Logische Konsistenz: Daten sind in sich korrekt. Vollst"andig ausgef"uhrte Transaktionen erhalten die logische Konsistenz
+	\item
+		Logische Konsistenz setzt physische Konsistenz vorraus
+	\item
+		Fehlerarten:
+		\begin{itemize}
+			\item
+				Transaktionsfehler (Transaktion aus irgendeinem Grund nicht durchf"uhrbar)
+			\item
+				Systemfehler: Verlust der Hauptspeicherinhalte/Puffer
+			\item
+				Ger"atefehler (insb. Medienfehler): Festplatte kaputt!
+		\end{itemize}
+
+	\item
+		Recovery-Klassen:
+		\begin{itemize}
+			\item
+				Partial Undo (R1-Recovery): Zur"ucksetzen in Zustand vor Transaktion, beinflusst andere TAs nicht
+			\item
+				Partial Redo (R2-Recovery): Nach Verlust des Hauptspeichers, wiederholen aller verlorengegangenen "Anderungen von abgeschlossenen TAs
+			\item
+				Global Undo (R3-Recovery): Nach Verlust des Hauptspeichers, zur"ucksetzen aller durch den Ausfall unterbrochenen Transaktionen
+			\item
+				Global Redo (R4-Recovery): Nach Ger"atefehler, Backup einspielen und alle TAs seit dem Backup nachvollziehen/wiederholen
+		\end{itemize}
+\end{itemize}
+
+
+\subsection{Einbringstrategien}
+\begin{itemize}
+	\item
+		Einbringen: G"ultigmachen von Datenobjekten in der Datenbank, so dass sie auch nach Fehlern benutzt werden k"onnen
+	\item Einbringstrategien (wann?):
+		\begin{itemize}
+			\item
+				Steal: Bei Verdr"angung aus dem Puffer auch schon vor Ende der TA
+			\item
+				NoSteal: Fr"uhestens am Ende der erfolgreichen TA, dann kein Undo erforderlich, daf"ur gro"ser Puffer
+			\item
+				NoForce: Erst bei Verdr"angung aus dem Puffer, i.All. deutlich nach dem Ende der TA
+			\item
+				Force: Sp"atestens am Ende der erfolgreichen TA, kein Partial Redo erforderlich
+		\end{itemize}
+	\item
+		Einbringstrategien (wie?):
+		\begin{itemize}
+			\item
+				NotAtomic: Direktes Einbringen (update in place), geht nicht atomar
+			\item
+				Atomar: Indirektes Einbringen, dann einfach umschalten
+		\end{itemize}
+\end{itemize}
+
+
+\subsection{Protokolldaten}
+\begin{itemize}
+	\item
+		Protokollinformationen sind nur, was zus"atzlich zur Einbringstrategie ben"otigt wird um nach Systemausfall wieder konsistenten Zustand herzustellen
+	\item
+		Wann wird in die Logdatei geschrieben?
+		\begin{itemize}
+			\item
+				Undo Informationen: m"ussen geschrieben sein, bevor "Anderungen eingebracht werden - \enquote{Write ahead Log}/WAL
+			\item
+				Redo Informationen: Muss geschrieben sein bevor der Abschluss der TA an Programm/Benutzer gemeldet wird
+		\end{itemize}
+
+	\item
+		Physische Protokollierung
+		\begin{itemize}
+			\item
+				Zustandsprotokollierung: Before-Image/BI f"ur Undo, After-Image(AI) f"ur Redo. Einheiten: Seiten oder S"atze/Eintr"age
+			\item
+				Seitenprotokollierung: vollst"andige Kopie von ganzer Seite in den Log geschrieben (vor und nach "Anderung)
+			\item
+				Eintragsprotokollierung: nur der tats"achlich ge"anderten Teile einer Seite, Sammlung und Pufferung im Hauptspeicher. Weniger EA-Aufwand, aber komplexere Recovery (Eintrag kann nicht einfach zur"uckkopiert werden, Speicher k"onnte mittlerweile anders genutzt werden  $\rightarrow$ Zur"uckspeichern "ahnlich wie Neueinf"ugen
+
+		\end{itemize}
+
+\end{itemize}
+\subsection{Sicherungspunkte}
+\begin{itemize}
+	\item
+		Problem bei Redo: Nach Systemfehler m"ussten alle "Anderungen seit Start des DBS wiederholt werden
+	\item
+		Direkte Sicherungspunkte: Ausschreiben u. einbringen aller ge"anderten Seiten in die Datenbank
+	\item
+		Indirekte Sicherungspunkte (\enquote{fuzzy checkpoints}) nicht behandelt
+	\item
+		Transaction Oriented Checkpoint (TOC): ge"anderten Seiten einer TA nach TA-Ende sofort in DB einbringen, keine Redo-Recovery notwendig aber hohe Belastung im Normalbetrieb
+	\item
+		Transaction Consistent Checkpoint (TCC): Einbringen aller "Anderungen erfolgreicher TAs, daf"ur Lesesperre auf ganzer DB
+	\item
+		Action-Consistent Checkpoint (ACC): Zum Zeitpunkt des Checkpoints keine "Anderungsoperationen aktiv, Checkpoint begrenzt nur Redo-Recovery
+\end{itemize}
+
+\subsection{Recovery nach Systemfehler}
+\begin{itemize}
+	\item
+		bei direkter Seitenzuordnung:
+		\begin{itemize}
+			\item
+				materialisierte DB chaotisch
+			\item
+				Block der materialisierten DB ist: aktuell (\checkmark), veraltet ( $\rightarrow$ Redo) oder dirty ( $\rightarrow$ Undo)
+		\end{itemize}
+	\item
+		bei indirekter Seitenzuordnung:
+		\begin{itemize}
+			\item
+				Datenbank ist mindestens physisch konsistent, entspricht zustand des letzten erfolgreichen Einbringens
+		\end{itemize}
+	\item
+		Allgemeine Restart-Prozedur:
+		\begin{enumerate}
+			\item
+				Analyse-Lauf vom letzten Checkpoint bis zum Log-Ende, bestimmen von Gewinner und Verlier TAs
+			\item
+				R"ucksetzen der Verlierer TAs durch R"uckw"artslesen des Logs
+			\item
+				Redo Lauf: Vorw"artslesen des Logs (Startpunkt abh"angig vom Checkpoint-Typ), "Anderungen der Gewinner-TAs ggf wiederholen
+		\end{enumerate}
+\end{itemize}
+
+\subsection{Ger"ate-Recovery}
+\begin{itemize}
+	\item
+		Meist Plattenfehler, versuchen die zu reduzieren (z.B. RAID)
+	\item
+		Full vs Incremental Backup
+\end{itemize}
+
+
+
+
+
+
+
+
+\newpage
+\section{Klausur WS 13/14}
+\setcounter{section}{0}
+\section{Wissensfragen}
+\subsection{Definition}
+Wenn persistente Speicherung und keine Details der Speicherung
+\subsection{Richtig oder falsch}
+\begin{itemize}
+	\item
+		Datenbank ist nur f"ur Ablage von Daten da, nicht zum Zugriff:\\
+		In Datenbank werden Daten nur abgelegt, f"ur Zugriff darauf ist DBMS zust"andig - das wiederum auf die Daten aus der DB zugreift
+	\item
+		TID gleich solange Satz existiert:\\
+		Jop, falls Satz verschoben werden muss wird Indirektion eingerichtet
+	\item
+		Seite im Puffer muss selbe Gr"o"se haben wie Seite im BS:\\
+		Seite genauso gro"s wie Block im Puffer  $\rightarrow$ Muss nicht, w"are aber sinnvoll
+	\item
+		Mit TID h"ochstens eine Indirektion beim Zugriff auf nicht-fragmentierte Konzepte:\\
+		(Sofern direkt "uber TID und nicht "uber Index zugegriffen wird:) Ja, falls Satz ein zweites mal verschoben werden muss, wird einfach erste Indirektion umgebogen
+	\item
+		DBS kann Blockgr"o"se frei w"ahlen:\\
+		Theoretisch ja, praktisch gleiche Gr"o"se wie BS sinnvoll
+	\item
+		Hashverbund nur wenn ein Hashindex existiert:\\
+		Dann zwar besonders sinnvoll, aber Hashindex kann auch \enquote{on the fly} erzeugt werden
+	\item
+		Prim"arorganisation einer Relation ist nach dem Prim"arschl"ussel organisiert:\\
+		Nein, wenn Prim"arorganisation kein B$(^*)$-Baum ist, ist die gar nicht sortiert
+\end{itemize}
+\subsection{Richtig/Falsch}
+\subsection{Schichtenmodell}
+\section{Puffer}
+\subsection{Indirekte Seitenzuordnung}
+\subsection{Verdrängung}
+
+\section{Letzte "Ubung}
+\subsection{Fragen zur Vorlesung}
+
+\begin{enumerate}
+	\item
+		\begin{align*}
+			r_1(x) \quad w_2(x) \quad r_1(x) &\Rightarrow Non-Repeatable\, Read\\
+			r_1(P) \quad w_2(x\, in\, P) \quad r_1(P) &\Rightarrow Phantom\\
+			w_1(x) \quad r_2(x) \quad a_1 \quad c_2 &\Rightarrow Dirty\, Read\\
+			w_1(x) \quad r_2(x) \quad w_2(x) \quad a_1 \quad c_2 &\Rightarrow Dirty\, Write\\
+			r_1(x) \quad r_2(x) \quad w_1(x) \quad w_2(x) &\Rightarrow Lost\, Update
+		\end{align*}
+
+	\item
+		\begin{description}
+			\item[Serialisierbarkeit] Ein Schedule von TAs ist dann serialisierbar, wenn er zu irgendeinem seriellen Ablauf äquivalent ist
+			\item[Äquivalenz]Zwei Abläufe sind äquivalent: (Durch vertauschen von zwei benachbarten Operationen, die nicht in Konflikt stehen, kann man einen äquivalenten Ablauf erzeugen
+		\end{description}
+	\item
+		\begin{itemize}
+			\item
+			 Komplett serialisieren
+		 \item
+			 Kritische Datenobjekte sperren(Zwei M"oglichkeiten: statisches speren = alle Locks am Anfang der TA holen, die man evt. brauchen \emph{k"onnte} u. dynamisches Sperren Readlocks und Writelocks bei Bedarf)
+		\end{itemize}
+\end{enumerate}
+
+
+\subsection{Anomalien}
+\begin{itemize}
+	\item
+		Non-repeatable read T1 Z.15
+	\item
+		Dirty-Read u. Dirty-Write T1 Z.13 u. Z.19
+	\item
+		Lost Update T1 Z.24 (mit T4)
+\end{itemize}
+
+\subsection{Serialisierbarkeit}
+\begin{enumerate}
+	\item
+		Abhängigkeitsgraph: Pfeil von der Transaktion, die vor anderer Transaktoin ausgefüht werden muss
+		\begin{align*}
+			T_2  &\rightarrow_B T_3 \text{ T2 muss vor T3 ausgef"uhrt werden}\\
+			T_3 &\rightarrow_A T_1 \\
+			T_1 &\rightarrow_A T_3
+		\end{align*}
+		Bei Zyklus im Abhängigkeitsgraph ist nicht serialisierbar, mit sinnvollem dynamischem Locking trotzdem möglich
+	\item
+		\begin{align*}
+			T_3 \rightarrow_A T_1\\
+			T_3 \rightarrow_A T_2\\
+			T_2 \rightarrow T_1\\
+		\end{align*}
+
+\end{enumerate}
+	
+
+\subsection{Sperren}
+\begin{tabular}[H]{|c|c|c|c|}
+	A & & B &  \\
+	\hline
+	S & X & S & X \\
+	\hline
+	$T_1, T_3$ & & $T_2$ & $T_2$
+\end{tabular}
+$T_3$ blockiert bei $r_3(B)$, $T_1$ blockiert  bei $w_1(A)$\newline
+
+$\Rightarrow$ \begin{tabular}[H]{|c|c|c|c|}
+	A & & B &  \\
+	\hline
+	S & X & S & X \\
+	\hline
+	$T_1, T_3$ & & $$ & $$
+\end{tabular} \newline
+
+$\Rightarrow$ \begin{tabular}[H]{|c|c|c|c|}
+	A & & B &  \\
+	\hline
+	S & X & S & X \\
+	\hline
+	$T_1, T_3$ & & $T_3$ & $$
+\end{tabular} $T_3$ blockiert in $W_3(A) \Rightarrow$ deadlock
+
+Zusatzfrage: Nein
+\end{document}
