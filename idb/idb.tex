@@ -566,7 +566,7 @@
 	\item Segment:
 		\begin{itemize}
 			\item
-				linearer, logischer, potenziell unendlicher, tatsächlich aber unendlicher Adressraum mit sichtbaren Seitengrenzen
+				linearer, logischer, potenziell unendlicher, tatsächlich aber endlicher Adressraum mit sichtbaren Seitengrenzen
 			\item
 				Entspricht Datei (=Folge von Seiten)
 			\item
@@ -1127,13 +1127,13 @@
 					\item
 						Algorithmus f"ur $\Theta$-Verbund
 						\begin{lstlisting}
-						Scan ueber S; //aeussere Schleife
-						//P(s.SA)=Selektion auf einer Relation
-						fuer jeden Satz s, fuer den P(s.SA) gilt: 
-						Scan ueber R; //innere Schleife
-						fuer jeden Satz r,
-						fuer den P(r.SA) AND (r.VA OP s.VA) gilt: (OP =, <=, < etc..)
-						uebernimm kombinierten Satz (r, s) in das Ergebnis;
+Scan ueber S; //aeussere Schleife
+//P(s.SA)=Selektion auf einer Relation
+fuer jeden Satz s, fuer den P(s.SA) gilt: 
+Scan ueber R; //innere Schleife
+fuer jeden Satz r,
+fuer den P(r.SA) AND (r.VA OP s.VA) gilt: (OP =, <=, < etc..)
+uebernimm kombinierten Satz (r, s) in das Ergebnis;
 						\end{lstlisting}
 				\end{itemize}
 			\item
@@ -1149,12 +1149,12 @@
 				Annahme: Gibt Index "uber Verbundattributen bei beiden Relationen
 			\item
 				\begin{lstlisting}
-				Scan ueber S;
-				fuer jeden Satz s, fuer den P(s.SA) gilt:
-				ermittle ueber Ir(R.VA) alle Saete mit r.VA = s.VA;
-				ggf fuer jdes TID: hol Satz r;
-				fuer jeden Satz r, fuer den P(r.SA) gilt:
-				uebernimm kombinierten Satz (r,s) in das Ergebnis;
+Scan ueber S;
+fuer jeden Satz s, fuer den P(s.SA) gilt:
+ermittle ueber Ir(R.VA) alle Saete mit r.VA = s.VA;
+ggf fuer jdes TID: hol Satz r;
+fuer jeden Satz r, fuer den P(r.SA) gilt:
+uebernimm kombinierten Satz (r,s) in das Ergebnis;
 				\end{lstlisting}
 			\item
 				Eigentlich wird seitenweise vorgegangen um mehrfachen Zugriff auf selbe Seitie zu vermeiden
@@ -1523,6 +1523,24 @@
 		Full vs Incremental Backup
 \end{itemize}
 
+\section{Programmzugriff}
+\subsection{In Java}
+\begin{itemize}
+	\item
+		Zuerst Treiber laden: \lstinline$Class.forName("oracle.jdbc.driver.OracleDriver")$
+	\item
+		Verbindungsaufbau:\\ \lstinline$Connection con = DriverManager.getConnection(url, "name", "pw")$
+	\item
+		SQL absetzen: \lstinline$Statement stat = con.createStatement();$\\
+		\lstinline$String query = "SELECT Vorname, Nachname FROM Person WHERE Geburtsjahr < 1970";$\\
+		\lstinline$ResultSet resSet = stat.executeQuery(query);$
+	\item
+		\begin{lstlisting}
+while(resSet.next()){
+	System.out.println(ergebnis.getString(1) + " " + ergebnis.getString(2));
+}
+		\end{lstlisting}
+\end{itemize}
 
 
 
@@ -1535,7 +1553,7 @@
 \setcounter{section}{0}
 \section{Wissensfragen}
 \subsection{Definition}
-Wenn persistente Speicherung und keine Details der Speicherung
+Wenn persistente Speicherung und keine Details der Speicherung (Kemper/Eicker Datenbanksysteme sagt: \enquote{wenn wohldefinierte Schnittstelle darunterliegende Implementierung verdeckt})
 \subsection{Richtig oder falsch}
 \begin{itemize}
 	\item
@@ -1546,13 +1564,13 @@ Wenn persistente Speicherung und keine Details der Speicherung
 		Jop, falls Satz verschoben werden muss wird Indirektion eingerichtet
 	\item
 		Seite im Puffer muss selbe Gr"o"se haben wie Seite im BS:\\
-		Seite genauso gro"s wie Block im Puffer  $\rightarrow$ Muss nicht, w"are aber sinnvoll
+		Seite genauso gro"s wie Block im Puffer  $\rightarrow$ Muss nicht, w"are aber sinnvoll (Buffer-Frame = Pageframe im BS?)
 	\item
 		Mit TID h"ochstens eine Indirektion beim Zugriff auf nicht-fragmentierte Konzepte:\\
 		(Sofern direkt "uber TID und nicht "uber Index zugegriffen wird:) Ja, falls Satz ein zweites mal verschoben werden muss, wird einfach erste Indirektion umgebogen
 	\item
 		DBS kann Blockgr"o"se frei w"ahlen:\\
-		Theoretisch ja, praktisch gleiche Gr"o"se wie BS sinnvoll
+		Nein, wird von Hardware oder Dateisystem vorgegeben
 	\item
 		Hashverbund nur wenn ein Hashindex existiert:\\
 		Dann zwar besonders sinnvoll, aber Hashindex kann auch \enquote{on the fly} erzeugt werden
@@ -1560,11 +1578,21 @@ Wenn persistente Speicherung und keine Details der Speicherung
 		Prim"arorganisation einer Relation ist nach dem Prim"arschl"ussel organisiert:\\
 		Nein, wenn Prim"arorganisation kein B$(^*)$-Baum ist, ist die gar nicht sortiert
 \end{itemize}
-\subsection{Richtig/Falsch}
 \subsection{Schichtenmodell}
-\section{Puffer}
-\subsection{Indirekte Seitenzuordnung}
-\subsection{Verdrängung}
+\subsection{Puffer}
+\subsubsection{Indirekte Seitenzuordnung}
+\subsubsection{Verdrängung}
+\subsection{Recovery}
+\subsubsection{Konsistenz}
+\subsubsection{Durchf"uhrung}
+\begin{enumerate}
+	\item
+		Analyse der Logdatei: Identifizierung der \emph{Winner} und \emph{Loser}
+	\item
+		Wiederholung der Historie: (Redo) Alles, was ausgef"uhrt wurde vor absturz, aber noch im Hauptspeicher war wird wiederholt
+	\item
+		Undo der Loser: Die Loser (die, TAs, die zum Zeitpunkt des Absturzes noch nicht fertig waren) werden in umgekehrter Reihenfolge r"uckg"angig gemacht
+\end{enumerate}
 
 \section{Letzte "Ubung}
 \subsection{Fragen zur Vorlesung}
@@ -1651,4 +1679,7 @@ $\Rightarrow$ \begin{tabular}[H]{|c|c|c|c|}
 \end{tabular} $T_3$ blockiert in $W_3(A) \Rightarrow$ deadlock
 
 Zusatzfrage: Nein
+
+
+\include{notizen}
 \end{document}
