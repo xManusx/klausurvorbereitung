@@ -1,10 +1,35 @@
-\section{Notizen f"ur Fragestunde}
+\documentclass[a4paper, 12pt]{scrartcl}
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amstext}
+\usepackage{bussproofs}
+\usepackage{array}
+\usepackage{csquotes}
+\usepackage{listings}
+\lstset{breakatwhitespace=true,
+	basicstyle=\footnotesize
+}
+
+\usepackage{hyperref}
+
+\begin{document}
+
+\section{Notizen \emph{aus} Fragestunde}
 \begin{itemize}
 	\item
-		Definiere \enquote{Block}: Gibt Festplattenbl"ocke, Dateisystembl"ocke...
-	\item
-		Umbenennung (wie in letzter Braindump 6.1) in Anfragegraph?
-
-	\item
-		Blatt 8, 3d musterl"osung: h"a?
+		Sperren
+		\begin{itemize}
+			\item
+				Auf welcher granularit"atsebene will ich sperren? Tupel? Relationen? Segmente?
+			\item
+				Ziel: m"oglichst wenig/weit unten sperren
+			\item
+				Intention locks: muss oben erst was sperren, wenn ich unten sperren m"ochte
+			\item
+		\end{itemize}
 \end{itemize}
+
+\end{document}

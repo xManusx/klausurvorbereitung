@@ -18,6 +18,107 @@
 \begin{document}
 \section*{IDB Zusammenfassung}
 \tableofcontents
+
+\newpage
+
+\section{Zusammenfassung der ZUsammenfassung}
+\subsection{Definitionen}
+\begin{description}
+	\item[Datenunabh"angigkeit] Datenunabh"angigkeit bezeichnet das Speicheru und Wiedergewinnen (= Auffinden und aush"andigen) von persistenten Daten ohne Kenntnis der Details der Speicherung
+	\item[physische Konsistenz] Speicherungsstrukturen sind konsistent, alle Verweise sind korrekt, Indizes sind aktuell
+	\item[logische Konsistenz] Korrektheit der Dateninhalte, vollst"andig ausgef"uhrte Transaktionen "uberf"uhren die DB aus einem logisch konsistenten Zustand in einen anderen logisch konsistenten Zustand
+	\item
+		[Parial Undo/R1-Recovery] Nach Transaktionsfehler, R"ucksetzen auf Zustand vor Beginn der TA, andere TAs werden nicht beinflusst
+	\item
+		[Partial Redo/R2-Recovery] Nach Systemfeher mit Verlust des Hauptspeichers, Wiederholen aller verlorengegangenen "Anderungen von abgeschlossenen TAs
+	\item
+		[Global Undo/R3-Recovery] Nach Systemfehler mit Verlust des Hauptspeichers, Zur"ucksetzen aller durch den Ausfall unterbrochenen TAs
+	\item
+		[Global Redo/R4-Recovery] Nach Ger"atefehler, Backups einspielen
+	\item
+		[ACID Eigenschaften bei TAs]:
+		\begin{itemize}
+			\item Atomicity: Alles oder nichts Eigenschaft - entweder alle "Anderungen oder gar keine
+			\item Consistency: erfolgreiche TA garantiert, dass alle Konsistenz/Integrit"atsbedingungen eingehalten werden
+			\item
+				 Isolation: Alle Transaktionen isoliert voneinander, niemand benutzt inkonsistente Zwischenergebnisse anderer TAs
+			\item
+				 Durability: Alle Ergebnisse einer erfolgreichen TA m"ussen permanent gemacht worden sein, bevor Erfolg an Anwendung gemeldet werden darf
+		\end{itemize}
+
+
+\end{description}
+\subsection{Schichtenmodell}
+Sch"on auf \href{site:IDB-2015WS-09-Speicherung.pdf}{09/3}
+\begin{enumerate}
+	\item
+		\textbf{Anwendungsstrukturen}:
+		\begin{itemize}
+			\item
+				Aufgabe: Objektverarbeitung
+			\item
+				Adressierungseinheiten von oben: Anwendungsobjekte
+			\item
+				Addressierungseinheiten nach unten: Relationen, Sichten, Tupel
+			\item
+				Schnittstelle nach unten: mengenorientierte Schnittstelle - SQL, Transaktioen
+		\end{itemize}
+	\item
+		\textbf{Logische Datenstrukturen}:
+		\begin{itemize}
+			\item
+				Aufgabe: "Ubersetzung u. Pfadoptimierung
+			\item
+				Adressierungseinheiten von oben: Relationen, Sichten, Tupel
+			\item
+				Addressierungseinheiten nach unten: S"atze, B*-B"aume usw.
+			\item
+				Schnittstelle nach unten: interne Satzschnittstelle - \lstinline$r := SPEICHER <Satz>; LOESCH r$
+		\end{itemize}
+	\item
+		\textbf{Speicherungsstrukturen}:
+		\begin{itemize}
+			\item
+				Aufgabe: Satzverwaltung u. Zugriffspfadverwaltung
+			\item
+				Adressierungseinheiten von oben: S"atze, B*-B"aume usw.
+			\item
+				Addressierungseinheiten nach unten: Seiten, Segmente
+			\item
+				Schnittstelle nach unten: seitenorientierte Pufferschnittstelle - \\ \lstinline$ FIX(Segment, Seite); UNFIX(Seite)$
+		\end{itemize}
+	\item
+		\textbf{Seitenzuordnungsstrukturen}:
+		\begin{itemize}
+			\item
+				Aufgabe: Pufferverwaltung, Einbringstrategien
+			\item
+				Adressierungseinheiten von oben: Seiten, Segmente
+			\item
+				Addressierungseinheiten nach unten: Bl"ocke, Dateien
+			\item
+				Schnittstelle nach unten: blockorientierte Dateischnittstelle - \\ \lstinline$ LIES Datei, Block, k; Schreib k, Datei, Block$
+		\end{itemize}
+	\item
+		\textbf{Speicherzuordnungsstrukturen}:
+		\begin{itemize}
+			\item
+				Aufgabe: Externspeicherverwaltung
+			\item
+				Adressierungseinheiten von oben: Bl"ocke, Dateien
+			\item
+				Addressierungseinheiten nach unten: Slots, Spuren, Zylinder, Ger"ate usw.
+			\item
+				Schnittstelle nach unten: Ger"ateschnittstelle - Kanalkommandos
+		\end{itemize}
+	\item
+		Darunter nur noch physische DB
+\end{enumerate}
+
+
+
+
+\newpage
 \section{Einführung}
 \subsection{Datenunabhängigkeit}
 \begin{itemize}
@@ -328,7 +429,7 @@
 					\item
 						Wenn $\beta > \alpha$ auf einen Schlag q, 2q, 4q neue Blöcke belegen
 					\item
-						Komplettes Umspeichern der Sätze verzögern: Erst wenn beim Einfügen in Bucket i(<q) Überlaufbucket benötigt wird Rehash der Sätze dieses Buckets inkl. Überläufer mit h2, Bit i in Bitliste setzen
+						Komplettes Umspeichern der Sätze verzögern: Erst wenn beim Einfügen in Bucket i($<q$) Überlaufbucket benötigt wird Rehash der Sätze dieses Buckets inkl. Überläufer mit h2, Bit i in Bitliste setzen
 				\end{itemize}
 			\item
 				Zweiter Ansatz: Lineares Hashing
@@ -1681,5 +1782,5 @@ $\Rightarrow$ \begin{tabular}[H]{|c|c|c|c|}
 Zusatzfrage: Nein
 
 
-\include{notizen}
+%\include{notizen}
 \end{document}
