@@ -46,8 +46,27 @@
 				 Durability: Alle Ergebnisse einer erfolgreichen TA m"ussen permanent gemacht worden sein, bevor Erfolg an Anwendung gemeldet werden darf
 		\end{itemize}
 
-
 \end{description}
+
+\subsection{Anfrageverarbeitung}
+\begin{itemize}
+	\item
+		Phasen der Anfrageverarbeitung:
+		\begin{enumerate}
+			\item
+				Lexikalische und syntaktische Analyse: Anfragebaum erstellen
+			\item
+				Semantische Analyse: Existenz/G"ultigkeit der referenzierten Relationen und Attribute, Namensaufl"osung, Konvertierung der Werte in interne Darstellung
+			\item
+				Zugriffs/Integrit"atskontrolle: Kontrolle von Formaten, ggf. Konvertierung von Datentypen
+			\item
+				Standardisierung und Vereinfachung: Anfragebaum in Normalform bringen, Elimination von Redundanzen
+			\item
+				Restrukturierung und Transformation: Algebraische Verbesserungen (heuristische Regeln $\rightarrow$ Restrukturierung) und nicht-algebraische Optimierung (Transformation in g"unstigste  Planalternative)
+			\item
+				Code-Generierung: erzeugt Zwischencode und ausf"uhrbares Zugriffsmodul
+	\end{enumerate}
+\end{itemize}
 \subsection{Schichtenmodell}
 Sch"on auf \href{site:IDB-2015WS-09-Speicherung.pdf}{09/3}
 \begin{enumerate}
