@@ -1,0 +1,597 @@
+\documentclass[fleqn,12pt]{scrartcl}
+\usepackage{makeidx}
+\usepackage[utf8]{inputenc}
+\usepackage{color}
+\usepackage[ngerman]{babel}
+\usepackage{csquotes}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{gauss}
+\usepackage{braket}
+\usepackage{hyperref}
+\usepackage{wasysym}
+\usepackage{scrpage2}
+\usepackage{tikz}
+\usetikzlibrary{intersections}
+%\pagestyle{scrheadings}
+%\clearscrheadfoot
+%\ohead{\pagemark}
+%\ihead{Magnus Berendes, 21752155}
+%\ifoot{\today}
+%\ofoot{\blattn}
+%\setheadtopline{1pt}
+%\setheadsepline{0.4pt}
+%\setfootsepline{0.4pt}
+\usepackage{enumitem}
+%\setenumerate[0]{label=\alph*)}
+\newcommand{\id}{\, \mathrm{d}}
+\newcommand{\intl}{\int\displaylimits}
+% New definition of square root:
+% it renames \sqrt as \oldsqrt
+\let\oldsqrt\sqrt
+% it defines the new \sqrt in terms of the old one
+\def\sqrt{\mathpalette\DHLhksqrt}
+\def\DHLhksqrt#1#2{%
+	\setbox0=\hbox{$#1\oldsqrt{#2\,}$}\dimen0=\ht0
+	\advance\dimen0-0.2\ht0
+	\setbox2=\hbox{\vrule height\ht0 depth -\dimen0}%
+{\box0\lower0.4pt\box2}}
+
+\newcommand{\karos}[2]{
+	\begin{tikzpicture}
+		\draw[step=0.5cm, color=gray] (0,0) grid (#1 cm , #2 cm);
+	\end{tikzpicture}
+}
+\newcommand{\abs}[1]{
+	\left \vert #1 \right \vert
+}
+\newcommand{\absbb}[1]{
+	\left \Vert #1 \right \Vert
+}
+
+%TODO
+\newcommand{\blattn}{Blatt 5}
+\makeindex
+\begin{document}
+
+\section{Optimierung}
+\subsection{Basics/Wiederholung}
+\begin{itemize}
+	\item
+		Extremalstellen
+		\begin{itemize}
+			\item
+				Eigenwerte\index{Eigenwerte}: EW positiv  $\rightarrow$ Punkt Minimum, alle negativ  $\rightarrow$ Maximum, mindestens ein EW positiv, mindestens ein EW negativ  $\rightarrow$ indefinit, Sattelpunkt
+			\item
+				Satz von Minimum und Maximum\index{Satz von Minimum und Maximum}: Stetige Funktionen auf kompakten (=abgeschlossen und beschr"ankt)  Mengen (Definitionsbereich) nehmen globale Maxima und Minima an
+		\end{itemize}
+	\item Integration
+		\begin{itemize}
+			\item
+				\index{Integrationstricks}
+				Integration durch Substitution:
+				\begin{align*}
+					\intl_a^b f(u(x))\cdot u'(x) \id x = \intl_{u(a)}^{u(b)} f(u) \id u\\
+				\end{align*}
+			\item
+				Partielle Integration:
+				\begin{align*}
+					\intl a'b \id x = ab  - \intl ab' \id x
+				\end{align*}
+		\end{itemize}
+	\item
+		\textbf{Mitternachtsformel/L"osungsformel f"ur quadratische Gleichungen:}\index{Mitternachtsformel}
+		\begin{align*}
+			x_{1,2} = \frac{-b \pm \sqrt{b^2 -4ac}}{2a}
+		\end{align*}
+	\item
+		\textbf{Eigenwerte/-r"aume:}
+		\begin{itemize}
+			\item
+				\index{Eigenwerte}
+				Eigenwerte von Matrix $A$ berechnen:
+				$\det (A-\lambda E) \overset!= 0$
+			\item
+				\index{Eigenr"aume}
+				Eigenraum zu Eigenwert $\lambda$ berechnen:
+				$(A - \lambda E)\cdot \vec v = \vec 0$
+
+				Eigenraum zu Eigenwert $\lambda$ dann $\Set{\alpha \vec v,\, \alpha \in \mathbb{R}}$ ($\vec v$ nicht eindeutig)
+
+				Trick: komplex konjugierte Eigenwerte haben immer auch komplex konjugierte Eigenr"aume
+			\item
+				Vielfachheit von Eigenwerten:
+				\begin{itemize}
+					\item Algebraische Vielfachheit: wie oft kommt EW $\lambda$ vor?
+					\item
+						Geometrische Vielfachheit: wieviele Dimensionen hat der ER zu $\lambda$? (wieviele Nullzeilen bekommt man beim ER berechnen? aus wievielen unabh"angigen Vektoren besteht der ER?)
+
+				\end{itemize}
+		\end{itemize}
+
+	\item
+		\textbf{Partialbruchzerlegung}\index{Partialbruchzerlegung}
+
+		\begin{enumerate}
+			\item
+				Nennerpolynom faktorisieren 
+
+				(z.B. $\frac{7x+1}{x^3 + x^2 -x -1} \rightarrow \frac{7x+1}{(x+1)^2(x-1)}$)
+			\item
+				An den Multiplikationen zwischen den Nennerfaktoren in einzelne Br"uche auseinanderziehen, Z"ahler sind Variablen. Faktoren die mehrfach aufgreten werden in allen Potenzen bis zur vorliegenden angesetzt.
+
+				($\frac{7x+1}{(x+1)^2(x-1)} \rightarrow \frac{A}{x+1} + \frac{B}{(x+1)^2} + \frac{C}{x-1}$)
+			\item
+				Durch Erweitern auf den (bekannten) Hauptnenner bringen, ausmultiplizieren und nach Potenzen von $x$ sortieren.
+
+				($\frac{A(x^2-1) + B(x^2-1) + C(x-1)}{x^3+x^2 -x -1} \rightarrow \frac{(A+C)x^2 + (B+2C)x + (-A- B+C)}{x^3 + x^2 -x -1}$)
+
+			\item
+				Koeffizientenvergleich: Koeffizienten zwischen Ausgangsz"ahler und neuem Z"ahler m"ussen gleich sein 
+
+				($A+C = 0,\, B+2C = 7,\, -A-B+C =1$)
+
+		\end{enumerate}
+		
+	\item
+		\textbf{Inverses einer Matrix} \index{Inverses einer Matrix}
+		\begin{align*}
+			\begin{pmatrix} a & b \\ c & d \end{pmatrix}^{-1} = 
+				\frac{1}{ad-bc} \begin{pmatrix} d & -b \\ -c & a \end{pmatrix}
+		\end{align*}
+\end{itemize}
+
+\subsection{LaGrange-Formalismus}
+		\index{LaGrange-Formalismus}
+		\begin{enumerate}
+			\item
+				Nebenbedingung nach $=0$ umstellen
+			\item
+				M"ogliche Extrema unter der Nebenbeingung findet man mit $\nabla \mathcal{L}(x, y, \lambda) \overset!= 0$, mit $\mathcal{L}(x,y,\lambda) = f(x) - \lambda \cdot (\text{Nebenbedingung})$
+		\end{enumerate}
+
+
+\subsection{Lokale Aufl"osungsfunktion}
+\begin{itemize}
+	\item
+		\enquote{Auf Existenz pr"ufen} = schauen ob Nenner $\neq 0$
+\end{itemize}
+
+\subsection{Bogenl"ange, Kurvenintegral, Oberfl"achenintegral}
+\index{Bogenl\"ange}
+\begin{itemize}
+	\item\index{Kurvenintegral}
+		Kurvenintegral
+		\begin{itemize}
+			\item 1. Art: skalares Linienelement $\id s  = \absbb{\gamma'(t)} \id t$ (=auch f"ur Bogenl"ange)
+			\item 2. Art: vektorielles Linienelement $\id \vec s = \gamma'(t) \id t$
+		\end{itemize}
+	\item\index{Oberfl\"achenintegral}
+		Oberfl"achenintegral
+		\begin{itemize}
+			\item
+				1. Art: skalares Oberfl"achenelement $\id o = \absbb{\partial_s\gamma(s,t) \times \partial_t\gamma(s,t)} \id s \id t$
+			\item 2. Art:
+				vektorielles Oberfl"achenelement $\id \vec o = \partial_s\gamma(s,t) \times \partial_t\gamma(s,t) \id s  \id t$
+		\end{itemize}
+
+\end{itemize}
+
+\subsection{Konvexe Mengen und Funktionen}
+\begin{itemize}
+	\item Differenzierbare Funktionen sind konvex\index{Konvexit"atskriterium}: $f''(x) \geq 0$, bzw. positiv semidefinite Hessematrix (Alle EW $\geq 0$)
+	\item
+		Eine Menge $M$ ist konvex, wenn $\forall a,b \in M, \lambda \in \mathbb{R}, 0\leq \lambda \leq 1: \lambda a + (1-\lambda)b \in M$
+	\item
+		Funktion $f$ ist konvex, wenn $f(tx + (1-t)y) \leq tf(x) + (1-t)f(y)$
+\end{itemize}
+
+\subsection{Extrema quadratischer Funktionen}
+\begin{itemize}
+	\item
+		Niveaulinien der Funktion sind Ellipsen, Halbachsen in Richtung der Eigenr"aume
+	\item
+		F"ur L"angen der Halbachsen $a_1,a_2$ gilt: $\frac{a_1}{a_2} = \sqrt{\frac{\lambda_1}{\lambda_2}}$
+	\item
+		Minimum auf einem Kreis liegt logischerweise in Richtung der langen Halbachse, Maximum in Richtung der k"urzeren
+	\item
+		$Q(x) = \langle Ax, x \rangle (+ \langle b,x \rangle): \nabla Q(x) = Ax (+ b), \mathcal{H}_Q(x) = A$
+\end{itemize}
+
+
+\subsection{Banach'scher Fixpunktsatz}
+Funktion $\Phi: M \rightarrow M$, Fixpnktgleichung $x = \Phi(x)$ \index{Fixpunktgleichung}\index{Banachscher Fixpunktsatz}\index{Fixpunktiteration}
+\begin{itemize}
+	\item
+		Vorraussetzungen:
+		\begin{itemize}
+			\item
+				$M$ muss abgeschlossene Teilmenge des $\mathbb{R}^n$ sein
+			\item
+				$\Phi$ muss Selbstabildung sein, d.h. $\Phi(M) \subset M$ (f"ur $n = 1$ Pr"ufung indem man globale Extrema von $\Phi$ berechnet)
+			\item
+				$\Phi$ muss kontrahierend sein, d.h. $\absbb{\Phi(x) - \Phi(y)} \leq k\absbb{x-y}, \forall x,y \in M \text{ und \emph{ein} }k \in (0,1)$ (oder einfacher: $\sup\abs{\Phi'(x)} < 1$, $\sup\abs{\Phi'(x)}$ auch Kontraktionskonstante k)
+
+		\end{itemize}
+	\item Dann sagt der Satz:
+		\begin{itemize}
+			\item
+				Fixpunktgleichung $x = \Phi(x)$ hat \emph{genau eine} L"osung: $x_* \in M$
+			\item
+				Diese kann man mit Fixpunktiteration $x_{n+1} = \Phi(x_n), x_0 \in M$ beliebig bestimmen
+			\item Fehlerabsch"atzung der FP-Iteration: $\absbb{x_n - x_*} \leq k^n\cdot \absbb{x_0 - x_*}$ (oder: $\absbb{x_n - x_*} \leq \frac{k}{1-k}\absbb{x_n - x_{n-1}}$
+		\end{itemize}
+\end{itemize}
+
+\subsection{Jacobi-Verfahren}
+\begin{itemize}
+	\item
+		Konvergiert, wenn A \emph{diagonaldominant}\index{Diagonaldominanz} ist, d.h. Betrag des Diagonalelements ist stets gr"o"ser als Summe der Betr"age der "ubrigen Eintr"age der gleichen Zeile
+	\item
+		Um Gleichungssysteme $Ax = b$ iterativ zu l"osen. Iterationsalgorithmus:
+		\begin{align*}
+			x_{n+1} = D^{-1}b-D^{-1}(A-D)x, \, D = \text{diag}\, (a_{i,i})
+		\end{align*}
+\end{itemize}
+
+\subsection{Lineare Programme}
+\index{Lineare Programme}
+\begin{itemize}
+	\item
+		Standardform linearer Programme:\index{Lineare Programme!Standardform}
+		\begin{enumerate}
+			\item
+				$\max$ in $\min$ umwandeln: \\$\max(2x -3y + z) \rightarrow \min(-2x + 3y - z)$
+			\item
+				$\geq$ in $\leq$ umwandeln: \\$x \geq -10 \rightarrow -x \leq 10$
+			\item
+				Schlupfvariablen einf"uhren: \\
+				$x+3y \leq 1 \Leftrightarrow x + 3y + \tilde x = 1,\, \tilde x \geq 0$
+			\item
+				Sicherstellen, dass alle Variablen $\geq 0$, falls nicht:\\
+				$x =: x^+ - x^-,\, x^+, x^- \geq 0$
+			\item
+				Elimination redundanter Gleichungen
+			\item
+				$\vec c = $ Faktoren in zu minimierender Funktion
+			\item
+				$A = $ Nebenbedingungen in Matrixschreibweise
+			\item
+				$\vec b = $ rechte Seite der Nebenbedingungen
+			\item
+				Standardform:
+				\begin{align*}
+					\text{Suche } &\vec x: f(\vec x) := \langle x, c \rangle \rightarrow \min\\
+					\text{s.t. }& A\vec x = \vec b\\
+					&\vec x \geq 0
+				\end{align*}
+		\end{enumerate}
+	\item
+		Simplex:\index{Simplex}
+		\begin{enumerate}
+			\item
+				LP in Standardform bringen
+			\item
+				Zul"assige Basisl"osung finden: (Muss L"osung f"ur $Ax = b$ sein, alle Nichtbasis xe m"ussen 0 sein, alle Basis xe $> 0$, oft sind die Schlupfvariablen eine geeignete Basisl"osung)
+			\item
+				Simplextableau aufstellen
+				\begin{align*}
+					x_B &= \vec b, x_N = 0 \text{ (per Definition)}\\
+					A_B &= \text{Spalten die zur Basis geh"oren}\\
+					A_N &= \text{Spalten die nicht zur Basis geh"oren}\\
+					c_B^T &= \text{Spalten/Eintr"age von } \vec c \text{, die zur Basis geh"oren}\\
+					c_N^T &= \dots\\
+					T(B) &= \begin{pmatrix}
+						c^T - c^T_BA_B^{-1}A & -f(x)\\
+						A_B^{-1}A & x_B\\
+					\end{pmatrix}, \, \text{ (allgemein)}\\
+						T(B) &= \begin{pmatrix}
+							c^T & -f(x)\\
+							A & x_B
+						\end{pmatrix}, \, \text{ (wenn die Schlupfvariablen die Startbasis bilden)}
+				\end{align*}
+			\item
+				Simplexen bis zu einem Abbruchkriterium:
+				\begin{enumerate}
+					\item
+						W"ahle eine Spalte (au"ser der letzten) mit negativem obersten Eintrag. Gibt es keine solche ist die optimale L"osung gefunden.
+					\item
+						In dieser Spalte werden alle positiven Eintr"age betrachtet. Gibt es keine positiven Eintr"age in der Spalte ist die Zielfunktion unbeschr"ankt.\\
+						Man teilt nun immer den in derselben Zeile ganz rechts stehenden Eintrag durch den betrachteten positiven Eintrag\\
+						Das \emph{kleinste} Ergebnis bestimmt, welcher Wert \enquote{eingekastelt} wird
+					\item
+						Basistausch: Die im ersten Schritt bestimmte Spalte tritt in die Basis ein.
+						Jetzt suchen wir in der Zeile mit dem eingekastelten Wert nach der 1, die zu einer Basisspalte geh"ort (erkennt man im allg. daran, dass sie aus genau einer 1 und sonst nur Nullen besteht).\\
+						Diese (alte) Basisspalte tritt aus der Basis aus, die neue Basis $B'$ ist dann z.B. $\{1,4,5\}$
+					\item
+						Um Basistausch vollst"andig zu machen muss eingekastelte Wert zu 1 gemacht werden, restliche Spalte zu 0. (Mit Gauss, dabei nur den eingekastelten Wert benutzen um andere Basisspalten nicht kaputt zu machen)
+				\end{enumerate}
+			\item
+				Auswertung: $x_1$ entspricht 1. Spalte. Da wo hier die 1 steht, steht ganz rechts der Wert f"ur $x_1$, analog f"ur andere Werte in der Basis
+		\end{enumerate}
+\end{itemize}
+\section{Differentialgleichungen/systeme}
+\subsection{Klassifizierung}\index{Klassifizierung von DGL}
+\begin{itemize}
+	\item
+		Ordnung: h"ochste vorkommende Ableitung
+	\item
+		Linearit"at: nur im Bezug auf $y(t)$ (und Ableitungen), nicht auf $t$ allein
+	\item
+		explizit/implizit: explizit = nach der h"ochsten vorkommenden Ableitung umgestellt, implizit sonst
+	\item
+		skalar/System: eine Funktion oder mehrere?
+	\item
+		Autonomie: $t$ nur in Funktionen (autonom) oder auch au"serhalb (nicht autonom)?
+\end{itemize}
+\subsection{Trennung der Variablen}
+\index{Trennung der Variablen}
+F"ur separierbare DGLen
+\begin{enumerate}
+	\item 
+		Alle $y$s auf eine (inklusive $\id y$), alle $t$s auf die andere Seite (inklusive $\id t$)
+	\item
+		Beide Seiten integrieren, nach y umstellen
+	\item
+		Evt. noch $C$ (vorher nicht vergessen!) bestimmen 
+	\item
+		Definitionsmenge beachten!
+\end{enumerate}
+... mit Substitution:
+\begin{enumerate}
+	\item
+		Geeigneten Substanten bestimmen (z.B. $z = \frac{y}{t}$)
+	\item
+		Nach $y$ umstellen, und $y'$ bestimmen, durch ableiten
+	\item
+		$y'$ und $y$ jeweils substituieren, wieder nach $z'$ umstellen
+	\item
+		Anfangswert substituieren (Anfangs-$t$ in $z$ einsetzen)
+	\item
+		AWP mit $z(t)$ l"osen
+	\item
+		R"ucksubstituieren (siehe Punkt \enquote{nach $y$ umstellen})
+\end{enumerate}
+
+\subsection{Lineare, inhomogene Dgl, Variation der Konstanten}
+\index{Variation der Konstanten}
+F"ur Gleichungen der Form $y' = f(t)y + g(t)$
+\begin{enumerate}
+	\item
+		Allgemeine L"osung der zugeh"origen homogenen Dgl (Inhomogenit"at/$g(t)$ einfach weglassen) unbedingt $C$ soweit wie m"oglich rausholen!
+	\item
+		Variation der Konstanten:
+		\begin{enumerate}
+			\item
+				$C$ aus $y_\text{hom}$ zu $C(t)$ machen, $y_\text{hom}$ ableiten
+			\item
+				In die \emph{inhomogene} Dgl einsetzen, der Term mit $C(t)$ k"urzt sich \emph{immer} weg
+			\item
+				Gefundenes $C(t)$ in Gleichung aus Schritt a) einsetzen $= y_\text{sp}$
+		\end{enumerate}
+	\item
+		$y(t) = y_\text{hom}(t) + y_\text{sp}(t)$
+\end{enumerate}
+
+
+
+\subsection{Bernoullische Dgl}
+\index{Bernoullische Dgl}
+\begin{itemize}
+	\item
+		Allgemein von der Form $y' = f(t)y + g(t) y^\alpha,\, \alpha \in \mathbb{R}\setminus\{0,1\}$
+	\item
+		Substitution dann $z(t) := y^{1-\alpha}(t)$
+\end{itemize}
+
+
+
+\subsection{Lipschitzstetigkeit, Satz von Picard-Lindel"of}
+\begin{itemize}
+	\item
+		Lokale Lipschitzstetigkeit:\index{Lipschitzstetigkeit}
+		\begin{itemize}
+			\item
+				$f$ auf Intervall stetig differenzierbar, so is sie dort auch lokal Lipschitz-stetig
+			\item
+				Gilt $\lim\limits_{x\rightarrow x_0}{f'(x)} = \pm \infty$, so ist $f$ auf keiner Menge, die $x_0$ enth"alt lokal Lipschitz stetig
+		\end{itemize}
+
+	\item
+		Satz von Peano\index{Satz von Peano}: das AWP $y' = g(y,t), \, y(t_0) = y_0$ hat immer mindestens eine L"osung auf einer Umgebung von $t_0$, falls die rechte Seite in einer Umgebung von $(t_0, y_0)$ stetig ist
+	\item
+		Satz von Picard-Lindel"of \index{Satz von Picard-Lindel"of} sagt, dass das AWP in einer Umgebung von $t_0$ eindeutig l"osbar ist,
+		falls $g$ in einer Umgebung von $(t_0, y_0)$ stetig ist und dort bzgl $y$ lokal Lipschitz-stetig ist.
+\end{itemize}
+
+\subsection{Differentialgleichungssysteme}
+\label{sec:DGLS}
+\index{Differentialgleichungssysteme}
+		$y' = Ay$
+		\begin{enumerate}
+			\item
+				Eigenwerte von $A$ bestimmen, dann Eigenr"aume von $A$ bestimmen
+			\item
+				Fundamentalsystem $\mathbb{F} = \Set{e^{\lambda_i t} EV_{\lambda_i}, \dots}$
+			\item
+				Allgemeine L"osung ist dann $y = C_1 e^{\lambda_1} EV_1 + C_2 e^{\lambda_2} EV_2 \dots $
+			\item
+				Evt. AWP l"osen: Anfangswert einsetzen, Gleichungssystem l"osen
+			\item
+				Spezialfall: komplexes Fundamentalsystem $\mathbb{F_C}$
+				\begin{enumerate}
+					\item
+						Real- und Imagin"arteil einer komplexen L"osung bestimmen: $e^{it} = \cos(t) + i\sin(t)$ in den Vektor reinmultiplizieren
+					\item
+						In 4 Vektoren nach $\cos/\sin$ und $i$/kein $i$ aufteilen, $\cos$ und $\sin$ ohne $i$ bilden einen Teil des reelen Fundamentalsystems, mit $i$ einen anderen Teil des Fundamentalsystems (aber ohne $i$!)
+
+						Der andere komplexe Eigenvektor f"allt weg
+				\end{enumerate}
+			\item
+				Spezialfall: Vielfachheit der Eigenwerte passt nicht:
+				\begin{enumerate}
+					\item
+						\index{Hauptvektoren}
+				Hat ein Eigenwert eine h"ohere algebraische als geometrische Vielfachheit, braucht man zus"atzlich den Hauptvektor zweiter Stufe $h_2$, der das LGS $(A-\lambda E)h_2 = v$ ($v$ ist zugeh"origer Eigenvektor) l"ost.
+
+						Fundamentall"osungen dann $ve^{\lambda t}, (h_2+tv)e^{\lambda t}$
+			\item
+				Braucht man noch einen weiteren Hauptvektor, nimmt man den Hauptvektor 3. Stufe $h_2$: $(A-\lambda E)h_3 = h_2$
+
+						Fundamentall"osungen dann: $ve^{\lambda t}, (h_2+tv)e^{\lambda t}, (h_3 + th_2 + \frac{t^2}{\lambda}v)e^{\lambda t}$
+					\item
+						Hat man mehr als einen Hauptvektor erster Stufe ($v$ und $w$) und braucht noch einen Hauptvektor zweiter Stufe, wei"s man nicht, welcher Hauptvektor auf der Rechten Seite stehen muss. Deswegen nimmt man einen allgemeinen Hauptvektor: $(A-\lambda E)\vec x = \alpha \vec v + \beta \vec w$
+
+						Wichtig bei dem Fundamentalsystem: \enquote{Richtigen} Hauptvektor nehmen, ergibt sich durch $\alpha v + \beta w$
+				\end{enumerate}
+		\end{enumerate}
+
+		\subsection{Inhomogene Differentialgleichungssysteme}
+		\begin{itemize}
+			\item
+				Allgemeine L"osung $y_\text{H}$ bestimmen, siehe \autoref{sec:DGLS}
+			\item
+				$y_\text{Sp}(t) = W(t) \intl W^{-1}(t)b(t) \id t$ (komponentenweise integrieren)
+
+				Die Spalten von $W(t)$ sind die linear unabh"angigen L"osungen der homogenen L"osung. Dazu einfach einmal $c_1 = 1, c_2 = 0 \dots$ und einmal $c_1 = 0, c_2 =1 \dots$ setzen, \textbf{$e^t$s dabei nicht vergessen!}
+
+			\item Dann gilt wieder $y(t) = y_\text{Hom} + y_\text{Sp}$
+
+			\item
+				Rechnung tendenziell sehr komplex, raten kann unter Umst"anden effektiver sein
+		\end{itemize}
+
+		\subsection{Lineare DGLen h"oherer Ordnung}
+		\begin{itemize}
+			\item
+				Standard Ansatz f"ur skalare, lineare DGLen ist $y(t) = e^{\lambda t}$
+			\item
+				\enquote{Eigenwerte berechnen}: Anzahl der Ableitungsstriche ist die Potenz, Faktor bleibt gleich: $3y''' + 2y'' = 0 \rightarrow 3\lambda^3 + 2 \lambda^2 = 0$
+			\item
+				L"osung dann $y = c_1e^{\lambda_1 t} + c_2 e^{\lambda_2 t} \dots$
+			\item
+				Bei \enquote{doppelten Eigenwerten} kommt beim zweiten Auftreten ein $t$ mit dran: $c_1 e^{\lambda_1 t} + tc_2e^{\lambda_1 t}$
+			\item
+				F"ur die $c$s einfach noch paar mal ableiten, Anfangswerte einsetzen, LGS l"osen
+
+		\end{itemize}
+
+		\subsection{Inhomogne lineare DGLen h"oherer Ordnung}
+		\begin{itemize}
+			\item
+				$y_\text{Hom}$ alles wie gehabt, Inhomogenit"at weglassen
+			\item
+				\index{Ansatz vom Typ der rechten Seite}
+				$y_\text{Sp}$ durch \enquote{Ansatz vom Typ der rechten Seite}, wenn rechte Seite vom Typ $(at + b)e^{ct}$, dann Ansatz $y_\text{Sp} = t^r(At+B)e^{3t}$, $t^r$ wird nur relevant, wenn der Exponent von $e$ eine Nullstelle der charakteristischen Gleichung w"are, dann $r = \text{ Vielfachheit der Nullstelle}$, wenn keine Nullstelle $r = 0$%
+			\item
+				Ableiten (Produktregel!) und in DGL einsetzen um A und B zu bestimmen
+			\item
+				$y = y_\text{Hom} + y_\text{Sp}$
+		\end{itemize}
+
+
+		\section{Algebra}
+		\subsection{Restklassenringe}
+		\index{Restklassenringe}
+		\begin{itemize}
+			\item
+				$[a]_x = [b]_x \Leftrightarrow a\mod x = b \mod x$
+			\item
+				Rechenregeln:
+				\begin{itemize}
+					\item
+						$[a]_x^i = [a^i]_x$
+					\item
+						$\left[\sum ab\right]_x = \sum [a]_x [b]_x$
+				\end{itemize}
+		\end{itemize}
+
+
+		\subsection{Euklidischer Algorithmus}
+		Zur Bestimmung des ggT \index{Euklidischer Algorithmus}\index{ggT}
+
+		Beispiel: $ggT(14, 10)$:
+		\begin{align*}
+			14 &= 1 \cdot 10 + 4 \\
+			10 &= 2 \cdot 4 + 2 \\
+			4 &= 2 \cdot \underbrace{2}_{ggT(14,10)} + 0
+		\end{align*}
+
+		\subsection{Gruppen, Inverse}
+		\begin{itemize}
+			\item
+				Nach Satz aus VL ist  $(\mathbb{Z}_n \setminus [0]_n, \cdot)$ genau dann eine Gruppe, wenn $n$ prim, dann ist die Gruppe auch abelsch
+
+			\item
+				Inverses von $[a]_n$ in $(\mathbb{Z}_n \setminus [9]_n, \cdot)$ mit Euklidischem Algorithmus bzw. Lemma von Bezout besimmen:
+				\begin{enumerate}
+					\item
+						Finde $ggT(n, a)$ mit euklidischem Algorithmus (Beispiel mit $[8]_{25}$):
+						\begin{align*}
+							25 &= 3 \cdot \underline{8} + 1\\
+							8 &= 8 \cdot \underline{1} + 0
+						\end{align*}
+					\item
+						\enquote{R"uckw"artsanwenden:}
+						\begin{align*}
+							25 = 3 \cdot \underline{8} + 1 \Rightarrow 1 = 25 - 3 \cdot 8 \Rightarrow [1]_{25} = [8]_{25} \cdot [-3]_{25} \Rightarrow [8]_{25}^{-1} = [-3]_{25} = [22]_{25}
+						\end{align*}
+
+						Zweites Beispiel: $[43]_{219}^{-1}$
+						\begin{align*}
+							I:& &219 &= 5 \cdot \underline{43} + 4 \\
+							II:& &43 &= 10 \cdot \underline{4} + 3\\
+							III:& &4 &= 1 \cdot \underline{3} + 1
+						\end{align*}
+						\begin{align*}
+							\Rightarrow &1 \overset{III}= 4 - 1\cdot 3 \overset{II}=4-(43-10 \cdot 4) =
+							\\  &11\cdot 4 - 43 \overset{I}= 11 \cdot (219 - 5 \cdot 43) = 11 \cdot 219 - 56 \cdot 43\\
+							\Rightarrow& [43]_{219}^{-1} = [-56]_{219} = [163]_{219}
+						\end{align*}
+
+						Oder mit Potenzbildung: solange $[a]_n^{i++}$ rechnen, bis $[1]_n$ rauskommt. $[a]_n^{i-1}$ ist dann $[a]_n^{-1}$
+				\end{enumerate}
+
+			\item
+				Elemente von $(\mathbb{Z}_{a}^*, \cdot)$ bestimmen: alle nat"urlichen Zahlen $< a$, die teilerfremd zu $a$ sind
+
+			\item
+				M"achtigkeit der multiplikativen Gruppe $(\mathbb{Z}^*_n, \cdot)$ ist $\Phi(n)$ \index{Eulersche $\Phi$-Funktion}
+				\begin{align*}
+					\Phi(p^k) &= p^{k-1} \cdot (p-1),\, &\text{ falls  $p$ prim und $k \in \mathbb{N}$} \\
+					\Phi(ab) &= \Phi(a) \cdot \Phi(b), \, &\text{ falls $a,b$ teilerfremd}
+				\end{align*}
+
+			\item
+				M"achtigkeit einer Untergruppe: Ist $U$ eine Untergruppe einer endlichen Gruppe $G$, so ist die Zahl der Elemente von $U$ ein Teiler der Zahl der Elemente von $G$
+		\end{itemize}
+
+
+
+
+		\subsection{Pr"ufsummen, Fehlererkennung}
+		Pr"ufsummengleichung der Form $[g_1d_1 + g_2d_2 + \dots + g_id_i]_n = [x]_n$
+		\index{Pr"ufsummen}\index{Fehlererkennung}
+		\begin{itemize}
+			\item
+				Einzehlfehler werken erkannt, wenn alle Gewichte teilerfremd $n$ sind
+
+				Gegenbeispiel: Wert von $d_i$ um genau $\frac{n}{g_i}$ ver"andern
+			\item
+				Nachbarvertauschungsfehler k"onnen erkannt werden, wenn die Differenz zweier aufeinanderfolgender Gewichte teilerfremd zu $n$ ist.
+
+				Gegenbeispiel: trivial
+
+			\item
+				Beliebige Vertauschungsfehler k"onnen erkannt werden, wenn die Differenz zweier beliebiger Gewichte teilerfremd zu $n$ ist
+
+				Gegenbeispiel: trivial
+		\end{itemize}
+
+
+
+
+\addcontentsline{toc}{section}{Stichwortverzeichnis}
+\printindex
+\end{document}
