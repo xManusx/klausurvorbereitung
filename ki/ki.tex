@@ -12,6 +12,7 @@
 \usepackage{hyperref}
 \usepackage{wasysym}
 \usepackage{scrpage2}
+\usepackage{prooftrees}
 \usepackage{tikz}
 \usetikzlibrary{intersections}
 %\pagestyle{scrheadings}
@@ -56,4 +57,46 @@
 \begin{document}
 Kein Anspruch auf Vollst"andigkeit oder Korrektheit und so!
 
+\section{CSPs}
+\subsection{Inference}
+\begin{itemize}
+	\item
+\end{itemize}
+\section{logic}
+\begin{forest}
+	[$A \Rightarrow B^T$
+	[$A^F$]
+	[$B^T$]
+	]
+\end{forest}
+\begin{forest}
+	[$A\Rightarrow B^F$
+	[$A^T$
+	[$B^F$
+	]
+	]
+	]
+\end{forest}
+\begin{forest}
+	[$A \wedge B^T$
+	[$A^T$
+	[$B^T$
+	]]]
+\end{forest}
+\begin{forest}
+	[$A \wedge B^F$
+	[$A^F$]
+	[$B^F$]
+	]
+\end{forest}
+\begin{forest}
+	[$\neg A^T$
+	[$A^F$
+	]]
+\end{forest}
+\begin{forest}
+	[$\neg A^F$
+	[$A^T$
+	]]
+\end{forest}
 \end{document}
