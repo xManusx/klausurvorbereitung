@@ -44,7 +44,7 @@
 
     \item
         The minimum value
-        $$ p_{(w, b)} = min_{\;i=1,\dots,m} \;p_{(w, b)}(x_{i},y_{i})$$
+        $$ p_{(w, b)} = \min_{\;i=1,\dots,m} \;p_{(w, b)}(x_{i},y_{i})$$
         shall be called the geometrical margin of the training set.
     \item
         For canonical hyperplanes, the margin is $\ffrac{1}{\norm{w}}$.
@@ -63,19 +63,19 @@
     \item
         Solve following problem:
         \begin{align*}
-            maximize \; \; & \ffrac{1}{\norm{w}}\\
-            subject \; to \; \; & y_i(\inner{w, x_i}+b) \geq 1 %\;\; \forall i=1, \dots, m
+            \max \; \; & \ffrac{1}{\norm{w}}\\
+						\text{subject to} \; \; & y_i(\inner{w, x_i}+b) \geq 1 %\;\; \forall i=1, \dots, m
         \end{align*}
         which is equal to
         \begin{align*}
-            minimize \; \; & \ffrac{1}{2}\norm{w}^2\\
-            subject \; to \; \; & y_i(\inner{w, x_i}+b) \geq 1 %\;\; \forall i=1, \dots, m
+            \min\; \; & \ffrac{1}{2}\norm{w}^2\\
+						\text{subject to} \; \; & y_i(\inner{w, x_i}+b) \geq 1 %\;\; \forall i=1, \dots, m
         \end{align*}
     \item
         Soft-Margin case:
         \begin{align*}
-            minimize \; \; & \ffrac{1}{2}\norm{w}^2 + \mu \sum_i \xi_i\\
-            subject \; to \; \; & -(y_i(\inner{w, x_i}+b)-1+\xi_i) \leq 0 \\%\;\; \forall i=1, \dots, m\\
+            \min\; \; & \ffrac{1}{2}\norm{w}^2 + \mu \sum_i \xi_i\\
+						\text{subject to} \; \; & -(y_i(\inner{w, x_i}+b)-1+\xi_i) \leq 0 \\%\;\; \forall i=1, \dots, m\\
             & -\xi_i \leq 0 \;\; %\forall i=1, \dots, m
         \end{align*}
 
@@ -92,11 +92,12 @@
         $$\ffrac{\delta}{\delta b}L(w,b,\alpha) = 0, \;\; \ffrac{\delta}{\delta w}L(w,b,\alpha) = 0$$
         yields
         $$\sum_{i=1}^{m}\alpha_i y_i = 0, \;\; w = \sum_{i=1}^{m}\alpha_i y_i x_i$$
+
     \item
         Substituting the conditions for extremum we arrive at the dual form of the optimization problem:
         \begin{align*}
-            maximize \; \; & W(\alpha) = \sum_{i=1}^{m}\alpha_i - \ffrac{1}{2}\sum_{i,j=1}^{m}\alpha_i \alpha_j y_i y_j \inner{x_i,x_j}\\
-            subject \; to \; \; & \alpha_i \geq 0, i=1,\dots,m \\%\;\; \forall i=1, \dots, m
+            \max\; \; & W(\alpha) = \sum_{i=1}^{m}\alpha_i - \ffrac{1}{2}\sum_{i,j=1}^{m}\alpha_i \alpha_j y_i y_j \inner{x_i,x_j}\\
+						\text{subject to} \; \; & \alpha_i \geq 0, i=1,\dots,m \\%\;\; \forall i=1, \dots, m
             & \sum_{i=1}^{m} \alpha_i y_i = 0
         \end{align*}
     \item
@@ -139,7 +140,7 @@
             \item
                 Gaussian radial basis function: $k(x, x') = e^{-\ffrac{\norm{x-x'}_2^2}{\sigma^2}}$
             \item
-                Sigmoid kernel: $k(x, x') = tanh(\alpha \inner{x, x'} + \beta)$
+                Sigmoid kernel: $k(x, x') = \tanh(\alpha \inner{x, x'} + \beta)$
         \end{itemize}
     \item
         \textbf{TODO}: Mercers Theorem
@@ -151,8 +152,8 @@
     \item
         Primal optimization problem:
         \begin{align*}
-            minimize \; \; & f_0(x)\\
-            subject \; to \; \; & f_i(x) \leq 0 \\ %\;\; \forall i=1, \dots, m
+            \min\; \; & f_0(x)\\
+						\text{subject to} \; \; & f_i(x) \leq 0 \\ %\;\; \forall i=1, \dots, m
             & h_i(x) \leq 0 \\
         \end{align*}
         Optimal value: $p^*$\\
@@ -163,7 +164,7 @@
         The vectors $\lambda$ and $v$ are called the dual variables.
     \item
         Lagrange dual function:
-        $$ g(\lambda, v) = inf(L(x, \lambda, v)) = inf(f_0(x) + \sum_{i=1}^{m} \lambda_i f_i(x) + \sum_{i=1}^{p} v_i h_i(x))$$
+        $$ g(\lambda, v) = \inf(L(x, \lambda, v)) = inf(f_0(x) + \sum_{i=1}^{m} \lambda_i f_i(x) + \sum_{i=1}^{p} v_i h_i(x))$$
         The dual function is \textbf{concave}, even when the problem isn't.
         The dual function yields lower bounds on the optimal value $p^*$ of the problem: For any $\lambda \geq 0$ and any $v$ we have $g(\lambda, v) \leq p^*$.
 \end{itemize}
@@ -172,8 +173,8 @@
     \item
         Lagrange dual problem:
         \begin{align*}
-            maximize \;\; & g(\lambda, v)\\
-            subject \; to \; \; & \lambda \geq 0
+            \max\;\; & g(\lambda, v)\\
+						\text{subject to} \; \; & \lambda \geq 0
         \end{align*}
         $(\lambda^*, v^*)$ is refered to as dual optimal.\\
         The Langrange dual problem is a convex optimization problem, since the objective to be maximized is concave and the constraint is convex. This is the case wether or not the primal problem is convex.
