@@ -1,0 +1,270 @@
+\documentclass{scrartcl}
+
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{mathtools}
+
+\newcommand{\ffrac}[2]{\ensuremath{\frac{\displaystyle #1}{\displaystyle #2}}}
+
+\begin{document}
+
+\section[title]{Logical Agents\footnote{From \textit{Russel, Norvig - Artifical Intelligence A Modern Approach}, Chapter 7}}
+\subsection{Knowledge-based Agents}
+\begin{itemize}
+    \item
+        Central component: \textbf{knowledge base}, which consists of \textbf{sentences}, which are expressed in a \textbf{knowledge representation language}
+    \item
+        \textbf{Axiom}: sentece is taken as given witout being derived from other sentences (which is calles \textbf{inference}
+    \item
+        Two basic operations: \textbf{TELL} and \textbf{ASK} 
+    \item
+        Agent program steps:
+    \begin{enumerate}
+        \item
+            TELL knowledge base what is perceived
+        \item
+            ASK knowledge base what action should be performed
+        \item
+            TELL knowledge base which action was chosen and execute the action 
+    \end{enumerate}
+\end{itemize}
+
+\subsection{The Wumpus World}
+... (Only motivation, why logical agents are lit af)
+
+\subsection{Logic} 
+\begin{itemize}
+    \item 
+        Sentences are expressed according to the \textbf{syntax} of the representation language, which specifies all the sentences that are well formed
+    \item
+        A logic must also define the \textbf{semantics} or meaning of setences (the truth of each sentence with respect to each possible world), every sentence must either be true or false in standard logic
+    \item
+        Possible world/\textbf{model}: "assignment of real numbers to the variables"
+    \item
+        If a sentence $\alpha$ is true in model $m$, we say that $m$ satisfies $\alpha$ or somtimes $m$ is a model of $\alpha$
+    \item
+        \textbf{Entailment}: a sentence follows logically from another sentence. Notation: $\alpha \vDash \beta$
+    \item
+        \textit{Formally}: $\alpha \vDash \beta$ if and only if, in every model in which $\alpha$ is true, $\beta$ is also true. Notation $\alpha \vDash \beta$ if and only if $M(\alpha) \subseteq M(\beta)$
+    \item
+        \textbf{Model checking}: enumerate all possible models to check that $\alpha$ is true in all models in which \textit{KB} is true, that is, that $M(KB) \subseteq M(\alpha)$
+    \item
+        "Set of all consequences of $KB$ is a haystack, $\alpha$ is a needle. Entailment is like the needle being in the haystack; inference is finding it"
+    \item
+        If an inference algorithm $i$ can derive $\alpha$ from $KB$, we write $KB \vdash_{i} \alpha$ ("$\alpha$ is derived from $KB$ by $i$")
+    \item
+        An inference algorithm that derives only entailed sentences is calles \textbf{sound} or \textbf{truthpreserving}
+    \item
+        An inference algorithm is \textbf{complete} if it can derive any sentence that is entailed
+\end{itemize}
+
+\subsection{Propositional Logic: A Very Simple Logic}
+\begin{itemize}
+    \item
+        \textbf{Atomic Sentences} consist of a single \textbf{proposition symbol} (e.g. P, Q, R, ...)
+    \item
+        Two proposition symbols with fixed meaning: \textit{True} is the always-true proposition, \textit{False} the always-false proposition 
+    \item
+        \textbf{Logical connectives}:
+    \begin{itemize}
+        \item
+            $\lnot$: negation 
+        \item
+            $\land$: conjunction
+        \item
+            $\lor$: disjunction
+        \item
+            $\Rightarrow$: implication (premise and conclusion, if-then). A $\Rightarrow$ B is true, unless A is true and B is false.
+        \item
+            $\Leftrightarrow$: if and only if. A $\Leftrightarrow$ B is true, if A and B are both true or both false. 
+    \end{itemize} 
+    \item
+        In propositional logic, a model simply fixes the truth value for every proposition symbol, e.g. $m_{1} = \{P_{1,2} = false, P_{2,2} = true, ...\}$ 
+    \item
+        Propositional entailment is co-NP-complete (probably not easier than NP-complete), so every known inference algorithm for propositional logic has a worst-case complexity that is exponential in the size of the input
+\end{itemize}  
+
+\subsection{Propositional Theroem Proving}
+\begin{itemize}
+    \item
+        If the number of models is large, but the length of the proof is short, then theorem proving can be more efficient than model checking 
+    \item
+        \textbf{Logical equivalence}: Two sentences $\alpha$ and $\beta$ are logically  equivalent if they are true in the same set of models. Notation: $\alpha \equiv \beta$
+
+    \textbf{Standard logical equivalences}:
+    \label{logEqui}
+    \begin{itemize}
+        \item
+            $\alpha \Rightarrow \beta \equiv \lnot \beta \Rightarrow \lnot \alpha$
+        \item
+             $\alpha \Rightarrow \beta \equiv (\lnot \alpha \lor \beta)$
+        \item
+            $\alpha \Leftrightarrow \beta \equiv ((\alpha \Rightarrow \beta) \land (\beta \Rightarrow \alpha))$
+        \item
+            $\lnot (\alpha \land \beta) \equiv (\lnot \alpha \lor \lnot \beta)$ ($\alpha \lor \beta$ analog)
+        \item
+            $\alpha \land (\beta \lor \gamma) \equiv ((\alpha \land \beta) \lor (\alpha \land \gamma))$  ($\alpha \lor (\beta \land \gamma)$ analog)
+    \end{itemize} 
+    \item
+        Other definition: $\alpha \equiv \beta$ if and only if $\alpha \vDash \beta$ and $\beta \vDash \alpha$
+    \item
+        \textbf{Validity}: A sentence is valid if it is true in \textit{all} models (also called \textbf{tautologies})
+    \item
+        Every valid sentence is logically equivalent to \textit{True}
+    \item
+        \textbf{Deduction theorem}: \textit{For any sentences $\alpha$ and $\beta$, $\alpha \vDash \beta$ if and only if the sentence $(\alpha \Rightarrow \beta)$ is true in every model}
+    \item
+        \textbf{Satisfiability}: A sentence is satisfiable if it is true in, or satisied by, some model
+    \item
+        \textit{$\alpha \vDash \beta$ if and only if the sentence $(\alpha \land \lnot \beta)$ is unsatisfiable)} ("proof by contradiction", assumption that $\beta$ to be false leads to a contradiction with known axioms $\alpha$)
+\end{itemize}
+
+\subsubsection{Inference and proofs}
+\begin{itemize}
+    \item
+        \textbf{Modus Ponens}: $\ffrac{\alpha \Rightarrow \beta, \; \alpha}{\beta}$
+    \item
+        \textbf{And-Elimination}: $\ffrac{\alpha \land \beta}{\alpha}$
+    \item
+        All logical equivalences (\hyperref[logEqui]{Click}) can be used as inference rules, they are all \textit{sound}
+    \item
+        Finding a proof can be more efficient because the proof can ignore irrelevant propositions, no matter how many of them there are
+    \item
+        \textbf{Monotonicity}: the set of entailed sentences can only increase as information is added to the knowledge base
+    \item
+        if $KB \vDash \alpha$ then $KB \land \beta \vDash \alpha$
+    \item
+        The conclusion of the rule must follow \textit{regardless of what else is in the knowledge base}
+\end{itemize}
+
+\subsubsection{Proof by resolution}
+\begin{itemize}
+    \item
+        Search algorithms with inadequate number of available inference rules are not \textit{complete} 
+    \item
+        \textbf{unit resolution} inference rule: $\ffrac{l_{1} \lor \dots \lor l_{k}, \;\;\; m}{l_{1} \lor \dots \lor l_{i-1} \lor l_{i+1} \lor \dots l_{k}}$
+        where $l_{i}$ and $m$ are \textbf{complementary literals} (one is the negation of the other)
+    \item
+        Takes a \textbf{clause} - a disjunction of literals - and a literal and produces a new clause. Note that a single literal can be viewed as a disjunction of one literal, also known as a \textbf{unit clause}
+    \item
+        \textbf{full resolution} rule: $\ffrac{l_{1} \lor \dots \lor l_{k}, \;\;\; m_{1} \lor \dots \lor m_{n}}{l_{1} \lor \dots \lor l_{i-1} \lor l_{i+1} \lor \dots \lor l_{k} \lor m_{1} \lor \dots \lor m_{j-1} \lor m_{j+1} \lor \dots \lor m_{n}}$
+        where $l_{i}$ and $m_{j}$ are complementary literals
+    \item
+        The resulting clause should contain only one copy of each literal. The removal of multiple copies of literals is called \textbf{factoring}
+    \item
+        \textit{Soundness of resolution}: When $l_{i}$ true, then $m_{j}$ false, and hence $m_{1} \lor \dots \lor m_{j-1} \lor m_{j+1} \lor \dots \lor m_{n}$ must be true.
+        If $l_{i}$ false, then $l_{1} \lor \dots \lor l_{i-1} \lor l_{i+1} \lor \dots \lor l_{k}$ must be true. Now, $l_{i}$ is either true or false, so one or other of these conclusions holds - exactly as the resolution rule states.
+    \item
+        \textit{A resolution-based theroem prover can, for any sentences $\alpha$ and $\beta$ in propositional logic, decide whether $\alpha \vDash \beta$}.
+\end{itemize}
+
+\subsubsection{Conjunctive normal form}
+\begin{itemize}
+    \item
+        Resolution rule only applies to clauses (disjunctions of literals)
+    \item
+        \textit{But:} Every sentence of propositional logic is equivalent to a conjunction of clauses (\textbf{conjunctive normal form, CNF})
+\end{itemize}
+Converting a sentence (e.g. $B_{1,1} \Leftrightarrow (P_{1,2} \lor P_{2,1})$) into \textbf{CNF}:
+\begin{enumerate}
+    \item
+        Eliminate $\Leftrightarrow$, replacing $\alpha \Leftrightarrow \beta$ with $(\alpha \Rightarrow \beta) \land (\beta \Rightarrow \alpha)$
+
+        $(B_{1,1} \Rightarrow (P_{1,2} \lor P_{2,1})) \land ((P_{1,2} \lor P_{2,1}) \Rightarrow B_{1,1})$
+    \item
+        Eliminate $\Rightarrow$, replacing $\alpha \Rightarrow \beta$ with $\lnot \alpha \lor \beta$
+
+        $(\lnot B_{1,1} \lor P_{1,2} \lor P_{2,1}) \land (\lnot (P_{1,2} \lor P_{2,1}) \lor B_{1,1})$
+    \item
+        CNF required $\lnot$ to appear only in literals, so we "move $\lnot$ inwards" by repeated application of the following equivalences:
+
+        $\lnot(\lnot \alpha) \equiv \alpha$
+
+        $\lnot(\alpha \land \beta) \equiv (\lnot \alpha \lor \lnot \beta)$
+
+        $\lnot(\alpha \lor \beta) \equiv (\lnot \alpha \land \lnot \beta)$
+
+        In the example:
+        $(\lnot B_{1,1} \lor P_{1,2} \lor P_{2,1}) \land ((\lnot P_{1,2} \land \lnot P_{2,1}) \lor B_{1,1})$
+
+    \item
+        Eliminate nested $\lor$ and $\land$ operators by applyingdistributivity law
+
+        $(\lnot B_{1,1} \lor P_{1,2} \lor P_{2,1}) \land (\lnot P_{1,2} \lor B_{1,1}) \land (\lnot P_{2,1} \lor B_{1,1,})$
+\end{enumerate}
+
+\subsubsection{A resolution algorithm}
+\begin{itemize}
+    \item
+        To show that $KB \vDash \alpha$, we show that $(KB \land \lnot \alpha)$ is unsatisfiable
+\end{itemize}
+\textit{PL-Resolution Algorithm}:
+\begin{enumerate}
+    \item
+        Convert $(KB \lor \lnot \alpha)$ into CNF
+    \item
+        Apply resolution rule to the resulting clauses. Each pair that contains complementary literals is resolved to produce a new clause, which is added to the set if not already present
+    \item
+        The process continues until one of two things happens:
+
+        1) there are no new clauses that can be added, so $KB$ does not entail $\alpha$
+        
+        2) two clauses resolve to yield the empty clause, so $KB$ entails $\alpha$
+\end{enumerate}
+\begin{itemize}
+    \item
+        The empty clause - a disjunction of no disjuncts - is equivalent to \textit{False}
+\end{itemize}
+
+\textit{Completeness:}
+\begin{itemize}
+    \item
+        \textbf{Resolution closure }\textit{RC(S)} of a set of clauses $S$: set of all clauses derivable by repeated application of the resolution rule to clauses in $S$ or their derivatived
+    \item
+        \textbf{Ground resolution theorem:} If a set of clauses is unsatisfiable, then the resolution closure of those clauses conteins the empty clause.
+\end{itemize}
+
+\subsubsection{Horn clauses and definite clauses}
+\begin{itemize}
+    \item
+        Some real-world knowledge bases satisfy certain restrictions on the form of sentences they contain, which enables them to use a more restricted and efficient inference algorithm
+    \item
+        \textbf{definite clause:} disjunction of literals of which exactly one is positive, e.g. $(\lnot L_{1,1} \lor \lnot Breeze \lor B_{1,1})$
+    \item
+        \textbf{Horn clause:} disjunction of literals of which at most one is positive (so all definite clauses are Horn clauses, as are clauses with no positive literals (so called \textbf{goal clauses}))
+    \item
+        Horn clauses are closed under resolution: if you resolve two Horn clauses, you get back a Horn clause
+\end{itemize}
+Knowledge bases only containing definite clauses are interesting for three reasons:
+\begin{enumerate}
+    \item
+        Definite clauses can be written as implications, whose preimse is a conjunction of positive literals and whose conclusion is a single positive literal. A sentence consisting of a single positive literal, such as $L_{1,1}$ is called a fact, it too can be written in implication form as $True \Rightarrow fact$
+    \item
+        Inference with Horn clauses can be done through the \textbf{forward-chaining} and \textbf{backward-chaining} algorithms (basis for \textbf{logic programming}
+    \item
+        Deciding entailment with Horn clauses can be done in time that is linear in the size of the knowledge base
+\end{enumerate}
+
+\subsubsection{Forward and backward chaining}
+\begin{itemize}
+    \item
+        Forward chaining: begins from known facts (positive literals) in the knowledge base. If all the premises of an implication are known, then its conclusion is added to the set of known facts. This process continues until the query $q$ (a single propositional symbol) is added or until no further inferences can be made
+    \begin{itemize}
+        \item
+            \textbf{Sound:} Every inference is essentially an application of Modus ponens
+        \item
+            \textbf{Complete:} Every entailed atomic sentence will be derived
+    \end{itemize}
+    
+    \item
+        Forward chaining is an example of the general concept of \textbf{data-driven} reasoning - that is, reasoning in which the focus of attention start with the known data.
+    \item
+        Backward chaining: works backwards from the query. If all the premesis of one of the implications whose conclusion is $q$ can be proven true, then $q$ is true.
+    \item
+        \textbf{goal-directed reasoning}. It is useful for answering specific questins such as "What shall I do now?" and "Where are my keys?".
+    \item
+        Both run in linear (often less) time
+\end{itemize}
+
+\subsection{Effective Propositional Model Checking}
+\end{document}
