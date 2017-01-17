@@ -1,0 +1,218 @@
+\documentclass{scrartcl}
+
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{gensymb}
+
+\usepackage[a4paper, left=1cm, right=1cm, top=2cm, bottom=3cm]{geometry}
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+\DeclarePairedDelimiter\inner{\langle}{\rangle}%
+\newcommand{\ffrac}[2]{\ensuremath{\frac{\displaystyle #1}{\displaystyle #2}}}
+
+\begin{document}
+\section{Fourier Transform in a Nutshell}
+Key Idea: Compare signal with sinusoids of various frequencies and phases. 
+
+\subsection{Continuous Fourier Transform}
+\subsubsection*{Analog Signals}
+\begin{itemize}
+    \item
+        Time as well as amplitude are continuous, real-valued parameters
+    \item
+        Can be modeled as a function $f: \mathbb{R} \rightarrow \mathbb{R}$, which assigns to each time point $t \in \mathbb{R}$ an amplitude value $f(t) \in \mathbb{R}$
+\end{itemize}
+\subsubsection*{Sinussoidal signal}
+\begin{itemize}
+    \item
+        Function $g: \mathbb{R} \rightarrow \mathbb{R}$ defined by $g(t) = A sin(2\pi(\omega t - \varphi))$
+    \item
+        $A$ corresponds to the \textbf{amplitude}, $\omega$ to the \textbf{frequency} and $\varphi$ to the \textbf{phase}
+    %\item
+        %frequency is measured in Hz, phase in normalized radians (1 corresonds to an angle of 360\degree)
+    \item
+        In Fourier analysis: prototype oscillations that are normalized with regard to their power by setting $A = \sqrt2$
+    \item
+        Thus for each frequency parameter $\omega$ and phase parameter $\varphi$ we obtain a sinusoid 
+        $$cos_{\omega, \varphi}(t) = \sqrt2 cos(2\pi(\omega t - \varphi))$$
+    \item
+        Phase parameter only has to be considered for $\varphi \in [0, 1)$
+\end{itemize}
+\subsubsection*{Computing Similarity with Integrals}
+\begin{itemize}
+    \item
+        $\int_{t \in \mathbb{R}} f(t)g(t) dt$
+\end{itemize}
+\subsubsection*{First Definition of the Fourier Transform}
+\begin{itemize}
+    \item
+        For a fixed frequency $\omega \in \mathbb{R}$, we define
+        $$d_\omega = max_{\varphi \in [0,1)} (\int_{t \in \mathbb{R}} f(t) cos_{\omega, \varphi}(t) dt)$$
+        $$\varphi_\omega = argmax_{\varphi \in [0,1)} (\int_{t \in \mathbb{R}} f(t) cos_{\omega, \varphi}(t) dt)$$
+    \item
+        \textbf{Fourier Transform:} "collection" of all coefficients $d_\omega$ and $\varphi_\omega$ for $\omega \in \mathbb{R}$
+\end{itemize}
+\subsubsection*{Complex Numbers}
+\begin{itemize}
+    \item
+        Extends real numbers by introducing the imaginary number $i = \sqrt{-1}$ with $i^2 = -1$
+    \item
+        Gets written as $c = a + ib$ 
+    \item
+        Set of complex numbers $\mathbb{C}$ can be thought of as a two-dimensinal plane, where horizontal dimension corresponds to real part and vertical dimension to imaginary part (so $c = a+ib$ has Cartesian coordinates $(a,b)$)
+    \item
+        \textbf{Polar coordinates:} Complex number c is described by absolute value $\abs{c}$ (distance from origin) and angle $\gamma$ between the positive horizontal axis and the line from the origin to $c$
+    \item
+        Deriving polar coordinates:
+        $$ \abs{x} = \sqrt{a^2 + b^2} $$
+        $$ \gamma = atan2(b, a) $$
+    \item
+        Regaining complex number:
+        $$ exp(i\gamma) = cos(\gamma) + isin(\gamma) $$
+        $$ c = \abs{c} exp(i\gamma)$$
+\end{itemize}
+\subsubsection*{Complex Definition of the Fourier Transform}
+\begin{itemize}
+    \item
+        Idea: encode $d_\omega$ and $\varphi_\omega$ by a single complex number
+    \item
+        $ c_\omega = \ffrac{d_\omega}{\sqrt{2}} exp(2\pi i(-\varphi_\omega))$
+    \item
+        $\hat{f}(\omega) = c_\omega$
+    \item     
+        $\hat{f}$ is referred to as the Fourier transform of f, $\hat{f}(\omega) = c_\omega$ are called the Fourier coefficients
+    \item
+        Fourier transform can be computed by
+
+        \begin{align*}
+            \hat{f}(\omega) = & \int_{t \in \mathbb{R}} f(t) exp(-2\pi i \omega t) dt\\
+            & \int_{t \in \mathbb{R}} f(t) cos(-2\pi \omega t) dt + i \int_{t \in \mathbb{R}} f(t) sin(-2 \pi \omega t) dt
+        \end{align*}
+    \item
+        Real part is obtained by comparing $f$ with a cosine function, the imaginary part by comparing $f$ with a sine function
+    \item
+        $\abs{\hat{f}(\omega)}$ is called the \textbf{magnitude Fourier transform}
+    \item
+        With $\abs{\hat{f}(\omega)}$ and $\gamma_\omega$ being the polar coordinates of $\hat{f}(\omega)$:
+        $$d_\omega = \sqrt{2} \abs{\hat{f}(\omega)}$$
+        $$\varphi_\omega = -\ffrac{\gamma_\omega}{2\pi}$$
+\end{itemize}
+\subsubsection*{Fourier Representation}
+\begin{itemize}
+    \item
+        Signal reconstruction:
+        \begin{align*}
+            f(t) & = \int_{\omega \in \mathbb{R}_{\geq 0}} d_\omega \sqrt{2} cos(2 \pi (\omega t - \varphi_\omega))d\omega\\
+            & = \int_{\omega \in \mathbb{R}} c_\omega exp(2\pi i \omega t)d \omega
+        \end{align*}
+        
+\end{itemize}
+\subsection{Discrete Fourier Transform}
+\subsubsection*{Equidistant sampling}
+\begin{itemize}
+    \item
+        Digitization: Converting analog signals into finite representations (analog-to-digital conversion) 
+    \item
+        Given an analog signal $f: \mathbb{R} \rightarrow \mathbb{R}$ and a positive real number $T > 0$, one defines a function $x: \mathbb{Z} \rightarrow \mathbb{Z}$ by setting $x(n) = f(nT)$
+    \item
+        Since $x$ is only defined on a discrete set of time points, it is also refered to as a \textbf{discrete-time} (DT) signal
+    \item
+        $x(n)$ is called a sample, taken at time $t = nT$
+    \item
+        $F_s = 1/T$ is called sampling rate
+    \item
+        \textbf{Sampling theorem:} Original signal $f$ can be reconstructed perfectly from its sampled version $x$, if $f$ does not contain any frequencies higher than
+        $$ \Omega = F_s/2 = 1/(2T) Hz $$
+    \item
+        We say $f$ is an \textbf{$\Omega$-bandlimited} signal, $\Omega$ is known as the \textbf{Nyquist frequenct}
+    \item
+        In the case $f$ contains higher frequencies, sampling may cause artifacts referred to as \textbf{aliasing}
+\end{itemize}
+\subsubsection*{Discrete Fourier Transform}
+\begin{itemize}
+    \item
+        Sample the sinusoudal prototype oscillation in the same fashion as the signal and multiply the two sampled functions in a pointwise fashion (sampled product)
+    \item
+        Integration in the continuos case becomes summation in the discrete case, where the summands need to be weighted by the sampling period $T$
+        $$\sum_{n \in \mathbb{Z}} T f(nT) exp(-2\pi i \omega n T) \approx \hat{f}(\omega)$$
+    \item
+        "Approximation of integral area via sum of rectangular shapes" (\textbf{Riemann sum})
+    \item
+        Substituting $T = 1$ and $f(nT) = x(n)$ yields
+        $$ \hat{x}(\omega) = \sum_{n \in \mathbb{Z}} x(n) exp(-2\pi i \omega n) $$
+    \item
+        To recover relation to Fourier transform $\hat{f}$, one needs to know the sampling period $T$
+        $$ \hat{x}(\omega) \approx \ffrac{1}{T} \hat{f}(\ffrac{\omega}{T})$$
+    \item
+        $\omega = 1/2$ for $\hat{x}$ corresponds to the Nyquist frequency $\Omega = 1/(2T)$ of the sampling process
+    \item
+        Two \textbf{problems} for computation: 
+        \begin{enumerate}
+            \item
+                Infinite number of summands ($\sum_{n \in \mathbb{Z}}$)
+            \item
+                $\omega$ is a continuos parameter
+        \end{enumerate}
+    \item
+        \textbf{Solutions:}
+        \begin{enumerate}
+            \item
+                Assumption: most relevant information of $f$ is limited to a certain duration in time (e.g. song only lasts a few minutes). This means that we only need to consider a finite amount of samples $x(0),\dots,x(N-1)$ and the sum becomes finite.
+            \item
+                One computes the Fourier transform only for a finite number of frequencies ("sampling frequency axis" by considering frequencies $\omega = k/M$ for some suitable $M \in \mathbb{N}$ and $k \in [0: M-1]$). Often $N=M$ gets choosen.
+        \end{enumerate}
+    \item
+        \textbf{Discrete Fourier Transform:}
+        $$ X(k) = \hat{x}(k/N) = \sum_{n=0}^{N-1} x(n) exp(-2\pi i k n/N)$$
+        defined for integers $k \in [0: M-1] = [0 : N-1]$
+    \item
+        The frequency $\omega$ of $\hat{x}$ corresponds to $\omega/T$ of $\hat{f}$, so $F_{coef}(k) = \ffrac{k}{N \cdot T} = \ffrac{k \cdot F_s}{N}$
+    \item
+        Upper half of coefficients are redundant, one only needs to consider the coefficients $X(k)$ for $k \in [0: \lfloor N/2 \rfloor]$
+    \item
+        To compute all coefficients, one needs $N^2$ operations
+    \item
+        \textbf{Fast Fourier Transform}: Recursive computation, works particularly well in the case of N is a power of two, $Nlog_2N$ operations
+\end{itemize}
+
+\subsection{Short-Time Fourier Transform}
+\begin{itemize}
+    \item
+        Instead of considering the entire signal, the main idea of the STFT is to consider only a small section of the signal 
+    \item
+        One fixes a so-called \textbf{window function}, which is a function that is nonzero for only a short period of time
+    \item
+        The original signal is multiplied with the window funtion to yield a \textbf{windowed signal}
+    \item
+        To obtain frequency information at different time instances, one shifts the window function across time and computes a FT for each of the resulting windows
+    \item
+        STFT reflects not only the properties of original signal but also those of the window function (e.g. rectangular windows typically introduce "ripple" artifacts)
+    \item
+        Parameters:
+        \begin{itemize}
+            \item
+                Real-valued DT signal $x: \mathbb{Z} \rightarrow \mathbb{R}$ obtained with sampling rate $F_s$
+            \item
+                Sampled window function $w: [0:N-1] \rightarrow \mathbb{R}$ of length $N \in \mathbb{N}$
+            \item
+                Hop size $H \in \mathbb{N}$ specified in samples and determining the step size in which the window is to be shifted across the signal (most of the time $H = N/2$)
+        \end{itemize}
+    \item
+        \textbf{Discrete STFT $X$:}
+        $$X(m,k) = \sum_{n=0}^{N-1} x(n+mH)w(n)exp(-2\pi i k n/N)$$
+        with $m \in \mathbb{Z}$ and $k \in [0:K]$
+    \item
+        The number $K = N/2$ is the frequency index corresponding to the Nyquist frequency
+    \item
+        $X(m,k)$ denotes the $k^{th}$ Fourier coefficient for the $m^{th}$ time frame
+    \item
+        For each fixed time frame $m$, one obtains a spectral vector of size $K+1$. The computation of each such spectral vector amounts to a DFT of size $N$, which can be done efficiently using the FFT
+    \item
+        $T_{coef}(m) = \ffrac{m \cdot H}{F_s}$ (in seconds) and $F_{coef}(k) = \ffrac{k \cdot F_s}{N}$ (in Hertz)
+    \item
+        \textbf{Spectrogram}: two-dimensional representation of the squared magnitude of the STFT
+        $$Y(m,k) = \abs{X(m,k)}^2$$
+\end{itemize}
+\end{document}
