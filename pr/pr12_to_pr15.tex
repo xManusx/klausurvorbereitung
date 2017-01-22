@@ -1,0 +1,221 @@
+\section*{12 - 15. Support Vector Machines and Kernels}
+This sections content mostly comes from \textit{Bernhard Schölkopf, Alexander J.Smola - Learning with Kernels}.\\
+The stuff about Duality comes from \textit{Stephen Boyd, Lieven Vandenberghe - Convex Optimization}.\\
+\textbf{TODO:} Kernel PCA, SVM Regression, Fisher Kernels
+\subsection*{Problem Formulation}
+\subsubsection*{Hyperplanes}
+\begin{itemize}
+    \item
+        Given: dot product space $H$ and set of patterns $x_{1}, \dots, x_{m} \in H$.
+    \item
+        Any hyperplane in $H$ can be written as 
+        $$\{x \in H | \inner{w, x} + b = 0\}, w \in H, b \in \mathbb{R}$$
+    \item
+        $w$ is vector orthogonal to hyperplane.
+    \item
+        Canonical Hyperplanes: 
+        The pair $(w,b) \in H \times \mathbb{R}$ is called a canonical form of the hyperplane with respect to $x_{1}, \dots, x_{m} \in H$ if it is scaled such that
+        $$ min_{\; i=1, \dots, m \;} \abs{\inner{w, x_{i}} + b} = 1$$
+        so the closest point to the hyperplane has a distance of \ffrac{1}{\norm{w}}.
+    \item
+        Decision function:
+        \begin{align*}
+        f_{w,b}: \; & H \rightarrow \{-1, +1\}\\
+            & x \rightarrow f_{w,b}(x) = sgn(\inner{w,x}+b)
+        \end{align*}
+\end{itemize}
+
+\subsubsection*{(Geometrical) Margin}
+\begin{itemize}
+    \item
+        For a hyperplane $\{x \in H | \inner{w,x} +b = 0\}$, we call
+        $$ p_{(w, b)}(x,y) = y(\inner{w,x}+b)/\norm{w}$$
+        the geometrical margin of the point $(x,y) \in H \times \{-1, +1\}$.
+
+    \item
+        The minimum value
+        $$ p_{(w, b)} = min_{\;i=1,\dots,m} \;p_{(w, b)}(x_{i},y_{i})$$
+        shall be called the geometrical margin of the training set.
+    \item
+        For canonical hyperplanes, the margin is $\ffrac{1}{\norm{w}}$.
+\end{itemize}
+
+\subsubsection*{Optimal Margin Hyperplanes}
+\begin{itemize}
+    \item
+        Set of examples $(x_1, y_1), \dots, (x_m, y_m)$.
+    \item
+        Goal: Find hyperplane with maximum margin, which satisfies $f_{w,b}(x_i) = y_i$ with
+        $$f_{w,b}(x) = sgn(\inner{w,x}+b)$$
+        for all examples.
+    \item
+        Canonicality implies $y_i(\inner{x, x_i}+b) \geq 1$
+    \item
+        Solve following problem:
+        \begin{align*}
+            maximize \; \; & \ffrac{1}{\norm{w}}\\
+            subject \; to \; \; & y_i(\inner{w, x_i}+b) \geq 1 %\;\; \forall i=1, \dots, m
+        \end{align*}
+        which is equal to
+        \begin{align*}
+            minimize \; \; & \ffrac{1}{2}\norm{w}^2\\
+            subject \; to \; \; & y_i(\inner{w, x_i}+b) \geq 1 %\;\; \forall i=1, \dots, m
+        \end{align*}
+    \item
+        Soft-Margin case:
+        \begin{align*}
+            minimize \; \; & \ffrac{1}{2}\norm{w}^2 + \mu \sum_i \xi_i\\
+            subject \; to \; \; & -(y_i(\inner{w, x_i}+b)-1+\xi_i) \leq 0 \\%\;\; \forall i=1, \dots, m\\
+            & -\xi_i \leq 0 \;\; %\forall i=1, \dots, m
+        \end{align*}
+
+\end{itemize}
+
+\subsubsection*{Dual form of the optimization problem (Hard-Margin case)}
+\begin{itemize}
+    \item
+        Lagrangian:
+        $$L(w,b,\alpha) = \ffrac{1}{2}\norm{w}^2-\sum_{i=1}^{m}\alpha_i(y_i(\inner{w,x_i}+b)-1)$$
+    \item
+        Karush-Kuhn-Tucker: Gradient of the Lagrangian must be zero at optimum
+    \item
+        $$\ffrac{\delta}{\delta b}L(w,b,\alpha) = 0, \;\; \ffrac{\delta}{\delta w}L(w,b,\alpha) = 0$$
+        yields
+        $$\sum_{i=1}^{m}\alpha_i y_i = 0, \;\; w = \sum_{i=1}^{m}\alpha_i y_i x_i$$
+    \item
+        Substituting the conditions for extremum we arrive at the dual form of the optimization problem:
+        \begin{align*}
+            maximize \; \; & W(\alpha) = \sum_{i=1}^{m}\alpha_i - \ffrac{1}{2}\sum_{i,j=1}^{m}\alpha_i \alpha_j y_i y_j \inner{x_i,x_j}\\
+            subject \; to \; \; & \alpha_i \geq 0, i=1,\dots,m \\%\;\; \forall i=1, \dots, m
+            & \sum_{i=1}^{m} \alpha_i y_i = 0
+        \end{align*}
+    \item
+        Decision function:
+        $$f(x) = sgn(\sum_{i=1}^{m}\alpha_i y_i \inner{x,x_i}+b)$$
+    \item
+        Karush-Kuhn-Tucker: $\alpha_i[y_i(\inner{w,x_i}+b)-1]=0 \;\;\forall i=1,\dots ,m$\\
+        Patterns $x_i$, for which $a_i > 0$ are called \textit{Support Vectors}.
+\end{itemize}
+\subsection*{Kernels}
+\begin{itemize}
+    \item
+        \textit{Problem}: SVMs can only be used, when classes are linearly seperable
+    \item
+        \textit{Solution}: Apply feature transform $\phi: \mathbb{R}^{d} \rightarrow \mathbb{R}^{D}, D \geq d$, such that the resulting features $\phi(x_i)$ are linearly seperable.
+    \item
+        Additionally, feature vectors only appear in inner products, both in the learning and the classification phase.
+    \item
+        \textit{Idea:} Introduce kernels $k(x, x') = \inner{\phi(x), \phi(x')}$, which calculate the values of inner products of transformed feature vectors.
+    \item
+        \textit{Kernel trick}: Kernels can be defined in a way, such that the transform $\phi$ doesn't even have to be computed, which saves computation time.
+    \item
+        \textbf{Example:}
+        $$x = (x_1, x_2),\;\; \phi(x) = (x_1^2, x_2^2, x_1 x_2, x_2 x_1)$$
+        $$\inner{\phi(x), \phi(x')} = x_1^2 x_1 '^2 + x_2^2 x_2 '^2 + 2 x_1 x_2 x_1' x_2' = \inner{x, x'}^2$$
+        so
+        $$ k(x, x') = \inner{\phi(x), \phi(x')} = \inner{x,x'}^2$$
+    \item
+        Kernel matrix:
+        $$ K = [K_{ij}], \; \; K_{i,j} = \inner{\phi(x_i), \phi(x_j)}$$
+    \item
+        Typical kernel functions:
+        \begin{itemize}
+            \item
+                Linear: $k(x, x') = \inner{x, x'}$
+            \item
+                Polynomial: $k(x, x') = (\inner{x,x'} + 1)^d$
+            \item
+                Laplacian radial basis function: $k(x, x') = e^{-\ffrac{\norm{x-x'}_1}{\sigma^2}}$
+            \item
+                Gaussian radial basis function: $k(x, x') = e^{-\ffrac{\norm{x-x'}_2^2}{\sigma^2}}$
+            \item
+                Sigmoid kernel: $k(x, x') = tanh(\alpha \inner{x, x'} + \beta)$
+        \end{itemize}
+    \item
+        \textbf{TODO}: Mercers Theorem
+
+\end{itemize}
+\subsection*{Duality (or why the Laplacian shit works)}
+\subsubsection*{The Lagrange dual function}
+\begin{itemize}
+    \item
+        Primal optimization problem:
+        \begin{align*}
+            minimize \; \; & f_0(x)\\
+            subject \; to \; \; & f_i(x) \leq 0 \\ %\;\; \forall i=1, \dots, m
+            & h_i(x) \leq 0 \\
+        \end{align*}
+        Optimal value: $p^*$\\
+        We do not assume the problem is \textbf{convex}.
+    \item
+        Lagrangian:
+        $$ L(x, \lambda, v) = f_0(x) + \sum_{i=1}^{m} \lambda_i f_i(x) + \sum_{i=1}^{p} v_i h_i(x)$$
+        The vectors $\lambda$ and $v$ are called the dual variables.
+    \item
+        Lagrange dual function:
+        $$ g(\lambda, v) = inf(L(x, \lambda, v)) = inf(f_0(x) + \sum_{i=1}^{m} \lambda_i f_i(x) + \sum_{i=1}^{p} v_i h_i(x))$$
+        The dual function is \textbf{concave}, even when the problem isn't.
+        The dual function yields lower bounds on the optimal value $p^*$ of the problem: For any $\lambda \geq 0$ and any $v$ we have $g(\lambda, v) \leq p^*$.
+\end{itemize}
+\subsubsection*{The Lagrange dual problem}
+\begin{itemize}
+    \item
+        Lagrange dual problem:
+        \begin{align*}
+            maximize \;\; & g(\lambda, v)\\
+            subject \; to \; \; & \lambda \geq 0
+        \end{align*}
+        $(\lambda^*, v^*)$ is refered to as dual optimal.\\
+        The Langrange dual problem is a convex optimization problem, since the objective to be maximized is concave and the constraint is convex. This is the case wether or not the primal problem is convex.
+    \item
+        $d^*$ is refered to as the optimal value of the dual problem. 
+    \item     
+        Weak duality: $d^* \leq p^*$\\
+        $p^* - d^*$ is the so called duality gap.
+    \item
+        Strong duality: $d^* = p^*$\\
+        Question: When does strong duality hold?\\
+        Answer: When Slatters condition is satisfied!
+    \item
+        Slatters Condition:
+        \begin{itemize}
+            \item
+                $f_0,\dots,f_m$ convex
+            \item
+                there exists an $x \in relint(D)$ with:\\
+                $f_i(x) < 0$, $i=1,\dots,m$\\
+                $Ax = b$
+        \end{itemize}
+    \item
+        Refinement of Slatters Condition:
+        \begin{itemize}
+            \item
+                $f_0$ convex, $f_1, \dots, f_k$ affine, $f_k+1, \dots f_m$ convex
+            \item
+                there exists an $x \in relint(D)$ with:\\
+                $f_i(x) \leq 0$, $i=1,\dots, k$\\
+                $f_i(x) < 0$, $i=k+1, \dots, m$\\
+                $Ax = b$
+                
+        \end{itemize}
+\end{itemize}
+\subsubsection*{Karush-Kuhn-Tucker optimality conditions}
+\begin{enumerate}
+    \item
+        Primal constraints:
+        \begin{itemize}
+            \item
+                $f_i(x) \leq 0$, $i=1,...,m$
+            \item
+                $h_i(x) = 0$, $i=1,...,p$
+        \end{itemize}
+    \item
+        Dual constraint: $\lambda_i \geq 0$, $i=1,...,m$
+    \item
+        Complementary slackness: $\lambda_i f_i(x) = 0$
+    \item
+        Gradient of Lagrangian is zero\\
+        $\bigtriangledown L(x,\lambda,v) = \bigtriangledown f_0(x) + \sum_{i=1}^{m} \lambda_i \bigtriangledown f_i(x) + \sum_{i=1}^{p} v_i \bigtriangledown h_i(x) = 0$
+\end{enumerate}
+
+So you can say: If your problem satisfies Slatters condition, it is possible to find the optimal solution via the dual problem formulation, because strong duality holds. If your solution satifies the Karush-Kuhn-Tucker optimality conditions, you have found the optimal solution.

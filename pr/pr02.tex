@@ -1,0 +1,52 @@
+\section*{2. Pattern Recognition Basics}
+\subsection*{Classification of Simple Patterns}
+\begin{itemize}
+    \item
+        Supervised learning:\\
+        $m$ training samples include features and associated class number
+        $$S = \{(x_1, y_1), (x_2, y_2), \dots, (x_m,y_m)\}$$
+        where $x_i \in \mathcal{X}$ denotes the feature vector and $y_i \in \mathbb{Z}$ denotes the class number of sample $i$. If nothing special is mentioned $\mathcal{X} \subseteq \mathbb{R}^d$.
+    \item
+        Unsupervised learning:\\
+        $m$ training samples just include features, no class assignments and even the number of classes is (not always) known
+        $$S = \{x_1, x_2, x_3, \dots, x_m\}$$
+\end{itemize}
+
+\subsection*{Bayesian Classifier}
+\begin{itemize}
+    \item
+        $\underbrace{p(x, y)}_{\text{joint pdf}} = \underbrace{p(y)}_{\text{prior}} \cdot \underbrace{p(x|y)}_{\text{class conditional pdf}} = \underbrace{p(x)}_{\text{evidence}} \cdot \underbrace{p(y|x)}_{\text{posterior}}$
+    \item
+        $p(y|x) = \ffrac{p(y) \cdot p(x|y)}{p(x)} = \ffrac{p(y) \cdot p(x|y)}{\sum_{y'}p(x, y')} = \ffrac{p(y) \cdot p(x|y)}{\sum_{y'}p(y') \cdot p(x|y)}$
+    \item
+        Decision rule:\\
+        $ y^* =  \underset{y}{argmax\;} p(y|x) = \underset{y}{argmax} \ffrac{p(y) \cdot p(x|y)}{p(x)} = \underset{y}{argmax\;} p(y) \cdot p(x|y) = \underset{y}{argmax\;} \{log p(y) + log p(x|y)\}$
+    \item
+        The key aspect in designing a classifier is to find a good model for the posterior $p(x|y)$
+    \item
+        Generative modeling: modeling and estimation of $p(y)$ and $p(x|y)$\\
+        \textbf{vs.}\\
+        Discriminative modeling: straight modeling and estimation of $p(y|x)$
+\end{itemize}
+
+\subsection*{Optimality of the Bayesian Classifier}
+\begin{itemize}
+    \item
+        $I(y_1, y_2)$ is the loss if a feature vector belonging to class $y_2$ is assigned to class $y_1$. The (0,1)-loss function is defined by
+        \begin{equation*}
+        I(y_1, y_2) = 
+            \begin{cases}
+                1 & y_1 \neq y_2\\
+                0 & y_1 = y_2
+            \end{cases}
+        \end{equation*}
+    \item
+        Average loss:\\
+        $AL(x, y) = \sum_{y'}I(y, y')p(y'|x)$\\
+        "Sum of posteriors of wrong classes"
+    \item
+        Optimal decision rule according to classification loss minimizes the average loss, so the optimal decision is
+        $y^* = \underset{y}{argmin \;} AL(x,y) = \underset{y}{argmin \;} \sum_{y'}I(y, y')p(y'|x) = \underset{y}{argmin \;}(1-p(y|x) = \underset{y}{argmax \;}p(y|x)$
+    \item
+        Conclusion: the optimal classifier w.r.t the (0,1)-loss function applies the Bayesian decision rule
+\end{itemize}
