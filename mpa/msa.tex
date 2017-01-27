@@ -1,0 +1,162 @@
+\section{Music structure analysis}
+\subsection{Terminology}
+\begin{itemize}
+	\item Repetition based (identify recurring patterns), novelty based (transitions between contrasts), homogeneity based (consistent passages)
+	\item Part (abstract) $\leftrightarrow$ segment (audio) $\leftrightarrow$
+		Section (both domains)
+	\item
+		Strophic form (lots of verses after another), chain form (unrelated parts after another, sometimes repetitions), Rondo form (A1, B, A2, C, A4, \dots), sonata form (I E1 E2 D R C), Pop songs (Intro/Outro, Verse, Chorus, Bridge)
+\end{itemize}
+
+\subsection{Self-Similarity Matrices}
+\begin{itemize}
+	\item
+		Self-similarity matrix S: $S(n,m) := s(x_n, x_m)$, high means high similarity, low means low similarity
+	\item
+		Feature space is $\mathbb{R}^D, D \in \mathbb{N}$, $s(x,y) := \abs{\langle x|y\rangle}$ (normalise features, maximal value of $s$ is 1)
+	\item
+		Segment is set $\alpha = [s : t]$, specified by starting point and endpoint
+	\item Paths:
+		\begin{itemize}
+			\item
+				Path over $\alpha$ of length $L$ is sequence $P = ((n_1,m_1), \dots , (n_L, m_L))$ with $m_1 = s$ and $m_L = t$ and step size is constrained (often $\Sigma = \Set{(2,1), (1,2), (1,1)}$)
+			\item
+				For a path $P$, associate two segements: $\pi_1(P) := [n_1 : n_L],\, \pi_2(P) := [m_1 : m_L]$
+			\item
+				From boundary condition: $\pi_2(P) = \alpha$, the other segment $\pi_1(P)$ is called the \textit{induced segment}
+			\item
+				Score of $P$: $\sigma(P) := \sum_{l=1}^L S(n_l, m_l)$
+		\end{itemize}
+	\item
+		Blocks:
+		\begin{itemize}
+			\item
+				Block over segment $\alpha = [s:t]$: $B = \alpha' \times \alpha \subseteq [1:N] \times [1:N]$
+			\item
+				$\pi_1$ and $\pi_2$ are defined similar to paths, $\alpha'$ is the induced segment
+			\item
+				Score $\sigma(B) = \sum_{(n,m) \in B} S(n,m)$
+		\end{itemize}
+	\item
+		Segments are path-similar if there is a path with high score, same for blocks
+	\item
+		Diagnoal paths can be enhanced by running an averaging filter (or low-pass filter) of length $L$ along the diagonal:
+		$$S_L(n,m) := \frac1L \sum_{l = 0}^{L-1} S(n+l,m+l)$$
+	\item
+		Tempo-invariant smoothing:
+		\begin{itemize}
+			\item Run the filter along varius directions similar to the diagonal, then take the cell-wise maximum of the resulting matrices. (Robust against tempo variations in different parts)
+			\item
+				If tempo difference between two segments is $\theta$ (second segment played $\theta$ times slower than the first one), resulting gradient is $(1,\theta)$
+			\item
+				SSM smoothed in direction $(1,\theta)$:
+				$$S_{L,\theta}(n,m) := \frac1L \sum_{l = 0}^{L-1} S(n+l,m+[l\cdot \theta])$$
+			\item
+				Compute for a set of $\theta$s $\Theta$
+			\item
+				$S_{L,\Theta}(n,m) := \max_{\theta \in \Theta} S_{L,\theta}(n,m)$
+			\item
+				Do smoothing forward and backward to prevent fading of paths
+		\end{itemize}
+	\item
+		Account for key changes/transpositions by cyclic shift for all the semi-tones. Combine by cell-wise maximum. Yields transposition-invariant self-similarity matrix $S^{TI}$
+	\item
+		Store the maximising shift indices in an additional matrix --- get $I$, the transposition index matrix
+	\item
+		Transposition-invariance increases noise $\Rightarrow$ compute on the basis of smoothed matrices
+	\item
+		Thresholding to reduce unwanted noise
+		\begin{itemize}
+			\item
+				Simplest form is global Thresholding by parameter $\tau$ $\rightarrow$ set everything smaller to 0
+				\item
+					Or binarization (everything 0 or 1)
+				\item
+					Or relative thresholding
+				\item
+					Or local thresholding column and rowwise
+
+		\end{itemize}
+\end{itemize}
+
+\subsection{Audio Thumbnailing}
+\begin{itemize}
+	\item
+		Goal: determine the most prepresentative section for a given audio piece (similar to thumbnails in image viewers)
+	\item
+		Develop fitness measure that assigns a fitness value to each audio segment. It should capture \textit{how well} a given segment explains other related segments and should indicate \textit{how much} of the overall music recording is covered by these related segments
+	\item
+		Segment family: $\mathcal{A} := \Set{\alpha_1, \alpha_2, \dots , \alpha_3}$, pairwise disjoint elements
+	\item
+		Coverage of $\mathcal{A}$: $\gamma(\mathcal{A}) := \sum_{k=1}^K \abs{\alpha_k}$
+	\item
+		Path family $\mathcal{P} := \Set{P_1, P_2, \dots, P_K}$, induced segments should be disjoint $\Set{\pi_1(P_1), \dots, \pi_1(P_K)}$ has to be a segment family
+	\item
+		Score of Path family: $\sigma(\mathcal{P}):= \sum_{k=1}^K \sigma(P_K)$
+	\item
+		Optimal path family: $\mathcal{P}^* := \argmax_{\mathcal{P}} \sigma(\mathcal{P})$
+	\item
+		Following computation of an optimal path family is $\mathcal{O}(\text{length of segment} \cdot \text{length of recording})$
+	\item
+		Recall DTW: align two sequences $X$ and $Y$, step size condition $\Sigma = \Set{(2,1), (1,2), (1,1)}$
+	\item
+		When computing path family over $\alpha$, role of $Y$ is taken over by $\alpha$
+	\item
+		$\alpha$ can/should be aligned to several non-overlapping subsequences of $X$
+	\item
+		Instead of finding cost-minimizing warping path, finde score-maximizing path family
+	\item
+		Only have to look at $S^\alpha$, the submatrix of $S$ only consisting of the columns in $\alpha$
+	\item
+		Accumulated score matrix $S$, rows are indexed by $[1:N]$, columns are indexed by $[0:M]$, $M:= \abs{\alpha}$
+	\item
+		$\Phi(n,m) = \Set{(n-i, m-j) | (i,j) \in \Sigma} \cap [1:N] \times [1:M]$, set of predecessors for $(n,m)$, exclude 0
+	\item
+		$D(n,m) = S^\alpha(n,m) + \max \set{D(i,j) | (i,j) \in \Phi(n,m)}$  accumulated score matrix
+	\item
+		First column of $D$ ($m= 0$) is important:
+
+		$D(1,0) = 0$
+
+		$D(n,0) = \max{D(n-1,0), D(n-1, M)}$ first term enables the algorithm to move upwards without cost, second term closes paths and ensure that paths do not overlap
+	\item
+		second column: $D(n,1) = D(n,0) + S^\alpha(n,1)$ makes it possible to start a new path at every row of the \enquote{elevator} column
+	\item
+		Score of an optimal path family: $\sigma(\mathcal{P}^*) = \max \Set{D(N,0), D(N,M)}$ first term allows final section $X$ to be skipped, second term ensures that in the other case the entire segment is aligned to a suffix of $X$ (whatever)
+	\item
+		$\mathcal{P}^*$ can be constructed from $D$ using the backtracking from DTW. Only modification: cells of $S^\alpha$ belonging to $m=0$ are to be omitted
+	\item
+		Fitness measure can not only be score $\sigma$: the segment that covers the entire song perfectly explains the whole song perfectly which is trivial.
+	\item
+		Solution: normalized score 
+		$$\bar\sigma(\alpha) := \frac{\sigma(\mathcal{P}^*) - \abs{\alpha}}{\sum_{k=1}^K L_K}$$
+
+		Subtracting $\abs{\alpha}$: think about the segment $\alpha = [1:N]$
+
+		$L_K := \abs{P_K}$, yielding the average score of the optimal path family
+
+		This answers how well fits the segment
+	\item
+		To answer how much it covers, introduce normalized coverage measure:
+		$$
+		\bar\gamma(\alpha) := \frac{\gamma(\mathcal{A}^* - \abs{\alpha}}{N}$$
+
+		$\mathcal{A}^* := \Set{\pi_1(P_1), \dots, \pi_1(P_K)}$
+
+		$\bar\gamma(\alpha)$ expresses the ratio between the union of the induced segments of $\alpha$ and the total length of the original recording (minus proportion for self-explanation)
+
+	\item
+		To combine both, introduce fitness $\phi(\alpha)$ using harmonic mean:
+		$$ \phi(\alpha) := 2 \cdot \frac{\bar\sigma(\alpha) \cdot \bar\gamma(\alpha)}{\bar\sigma(\alpha) + \bar\gamma(\alpha)}$$
+
+	\item
+		$\alpha^* := \argmax_\alpha \phi(\alpha)$
+
+	\item
+		There are scape plots, just see book or slides
+\end{itemize}
+
+
+
+\subsection{Novelty based segmentation}
+

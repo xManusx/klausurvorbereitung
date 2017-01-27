@@ -2,7 +2,7 @@
 \usepackage{makeidx}
 \usepackage[utf8]{inputenc}
 \usepackage{color}
-\usepackage[ngerman]{babel}
+%\usepackage[ngerman]{babel}
 \usepackage{csquotes}
 \usepackage{amssymb}
 \usepackage{amsthm}
@@ -43,182 +43,36 @@
 		\draw[step=0.5cm, color=gray] (0,0) grid (#1 cm , #2 cm);
 	\end{tikzpicture}
 }
-\newcommand{\abs}[1]{
-	\left \vert #1 \right \vert
-}
+
+\usepackage{mathtools}
+\usepackage{gensymb}
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+\DeclarePairedDelimiter\inner{\langle}{\rangle}%
+\newcommand{\ffrac}[2]{\ensuremath{\frac{\displaystyle #1}{\displaystyle #2}}}
+%\newcommand{\abs}[1]{
+	%\left \vert #1 \right \vert
+%}
 \newcommand{\absbb}[1]{
 	\left \Vert #1 \right \Vert
 }
 
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
 %TODO
 \newcommand{\blattn}{Blatt 5}
 \makeindex
+\title{Music Processing Analysis --- Zusammenfassung}
 \begin{document}
-Kein Anspruch auf Vollst"andigkeit oder Korrektheit und so!
+\maketitle
+\begin{center}Kein Anspruch auf Vollst"andigkeit oder Korrektheit und so!\end{center}
 
-\section{DTW}
-\subsection{Basic approach}
-
-\begin{itemize}
-	\item
-		Use cosine distance as cost measurement:
-		\begin{equation}
-			c(x,y) := 1 - \frac{\langle x | y \rangle}{\absbb{x} \cdot \absbb{y}}
-		\end{equation}
-	\item
-		Warping path: Sequence of tuples
-		\begin{itemize}
-			\item
-				Step size  $\in \Set{(1,1), (1,0), (0,1)}$
-			\item
-				Starting point $(1,1)$
-			\item
-				End point $(N,M)$
-		\end{itemize}
-	\item
-		Cost of a warping path ($c_p(X,Y)$) is cost accumulated along the way
-	\item
-		DTW-Distance (not a real distance!) of two sequences $X$ and $Y$ $DTW(X,Y)$: minimal warping path between them
-	\item
-		Accumulated cost matrix $D$: $D(N,M) = DTW(N,M)$ can be recursively computed:
-		\begin{align}
-			&D(n,1) = \sum_{k=1}^n C(k,1) \text{ for } n \in [1 : N]\\
-			&D(1,m) = \sum_{k=1}^m C(1,k) \text{ for } m \in [1 : M]\\
-			&D(n,m) = C(n,m) + \min \begin{cases}
-				D(n-1,m-1)\\
-				D(n-1,m)\\
-				D(n,m-1)
-			\end{cases}
-		\end{align}
-	\item
-		Optimal warping path can be recovered from the accumulated cost matrix via backtracking, starting at $q_1 = (N,M)$
-\end{itemize}
-
-\subsection{Variants}
-\begin{itemize}
-	\item
-		New Stepsizes:
-		\begin{itemize}
-			\item
-				$\Sigma = \Set{(2,1),(1,2),(1,1)}$: prohibits horizontal or vertical parts in the warping path, might lead to cells being omitted from either $X$ or $Y$
-			\item
-				Compliacted warping path only allowing at most 2 vertical or horizontal parts after another
-		\end{itemize}
-	\item
-		Local weights:
-		\begin{itemize}
-			\item
-				Introduce weights for horizontal ($w_h$), vertical ($w_v$) or diagonal ($w_d$) parts
-			\item
-				Often $w_h = w_d = 1$ and $w_d = 2$, trying to inhibit diagonals since one diagonal step (cost of one cell) corresponds to the combination of one horizontal and one vertical step (cost of two cells)
-		\end{itemize}
-	\item
-		Global constraints: constrain the warping path to a global constraint region
-		\begin{itemize}
-			\item
-				Two famous constraint regions: Sakoe-Chiba band (diagonal) and Itakura parallelogram (parallelogram between $(1,1)$ and $(N,M)$
-			\item
-				For computation set $C(n,m) = \inf$ if $(n,m)$ lies outside the constraint region --- speeds up computation
-		\end{itemize}
-
-	\item
-		Multiscale DTW:
-		\begin{itemize}
-			\item
-				Compute DTW at a lower resolution first, restrict later DTWs to the region where the lower resolution optimal path lies
-			\item
-				Multiscaling is \textit{successfull} if we find the optimal warping path this way
-		\end{itemize}
-
-	\item
-		Further notes:
-		\begin{itemize}
-			\item
-				Synchronise different recordings
-			\item
-				Synchronise recordings with sheet music (OMR - Convert to Piano Roll - Convert to Chroma - Synchronise)
-			\item
-				Create Tempo curves (OMR - Convert to Piano roll, fixed bpm - Convert to Chroma - synchronise - estimate bpm from DTW path)
-		\end{itemize}
-
-\end{itemize}
-
-\section{Music structure analysis}
-\subsection{Terminology}
-\begin{itemize}
-	\item Repetition based (identify recurring patterns), novelty based (transitions between contrasts), homogeneity based (consistent passages)
-	\item Part (abstract) $\leftrightarrow$ segment (audio) $\leftrightarrow$
-		Section (both domains)
-	\item
-		Strophic form (lots of verses after another), chain form (unrelated parts after another, sometimes repetitions), Rondo form (A1, B, A2, C, A4, \dots), sonata form (I E1 E2 D R C), Pop songs (Intro/Outro, Verse, Chorus, Bridge)
-\end{itemize}
-
-\subsection{Self-Similarity Matrices}
-\begin{itemize}
-	\item
-		Self-similarity matrix S: $S(n,m) := s(x_n, x_m)$, high means high similarity, low means low similarity
-	\item
-		Feature space is $\mathbb{R}^D, D \in \mathbb{N}$, $s(x,y) := \abs{\langle x|y\rangle}$ (normalise features, maximal value of $s$ is 1)
-	\item
-		Segment is set $\alpha = [s : t]$, specified by starting point and endpoint
-	\item Paths:
-		\begin{itemize}
-			\item
-				Path over $\alpha$ of length $L$ is sequence $P = ((n_1,m_1), \dots , (n_L, m_L))$ with $m_1 = s$ and $m_L = t$ and step size is constrained (often $\Sigma = \Set{(2,1), (1,2), (1,1)}$)
-			\item
-				For a path $P$, associate two segements: $\pi_1(P) := [n_1 : n_L],\, \pi_2(P) := [m_1 : m_L]$
-			\item
-				From boundary condition: $\pi_2(P) = \alpha$, the other segment $\pi_1(P)$ is called the \textit{induced segment}
-			\item
-				Score of $P$: $\sigma(P) := \sum_{l=1}^L S(n_l, m_l)$
-		\end{itemize}
-	\item
-		Blocks:
-		\begin{itemize}
-			\item
-				Block over segment $\alpha = [s:t]$: $B = \alpha' \times \alpha \subseteq [1:N] \times [1:N]$
-			\item
-				$\pi_1$ and $\pi_2$ are defined similar to paths, $\alpha'$ is the induced segment
-			\item
-				Score $\sigma(B) = \sum_{(n,m) \in B} S(n,m)$
-		\end{itemize}
-	\item
-		Segments are path-similar if there is a path with high score, same for blocks
-	\item
-		Diagnoal paths can be enhanced by running an averaging filter (or low-pass filter) of length $L$ along the diagonal:
-		$$S_L(n,m) := \frac1L \sum_{l = 0}^{L-1} S(n+l,m+l)$$
-	\item
-		Tempo-invariant smoothing:
-		\begin{itemize}
-			\item Run the filter along varius directions similar to the diagonal, then take the cell-wise maximum of the resulting matrices. (Robust against tempo variations in different parts)
-			\item
-				If tempo difference between two segments is $\theta$ (second segment played $\theta$ times slower than the first one), resulting gradient is $(1,\theta)$
-			\item
-				SSM smoothed in direction $(1,\theta)$:
-				$$S_{L,\theta}(n,m) := \frac1L \sum_{l = 0}^{L-1} S(n+l,m+[l\cdot \theta])$$
-			\item
-				Compute for a set of $\theta$s $\Theta$
-			\item
-				$S_{L,\Theta}(n,m) := \max_{\theta \in \Theta} S_{L,\theta}(n,m)$
-			\item
-				Do smoothing forward and backward to prevent fading of paths
-		\end{itemize}
-	\item
-		Account for key changes/transpositions by cyclic shift for all the semi-tones. Combine by cell-wise maximum. Yields transposition-invariant self-similarity matrix $S^{TI}$
-	\item
-		Store the maximising shift indices in an additional matrix --- get $I$, the transposition index matrix
-	\item
-		Transposition-invariance increases noise $\Rightarrow$ compute on the basis of smoothed matrices
-	\item
-		Thresholding to reduce unwanted noise
-		\begin{itemize}
-			\item
-				Simplest form is global Thresholding by parameter $\tau$ $\rightarrow$ set everything smaller to 0
-			\item Continue on page 193
-		\end{itemize}
-\end{itemize}
+	\tableofcontents
 
 
-
+\include{fourier}
+\include{dtw}
+\include{msa}
 
 \end{document}

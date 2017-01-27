@@ -1,18 +1,14 @@
-\documentclass{scrartcl}
+%\documentclass{scrartcl}
 
-\usepackage{hyperref}
-\usepackage{amssymb}
-\usepackage{mathtools}
-\usepackage{gensymb}
+%\usepackage{hyperref}
+%\usepackage{amssymb}
+%\usepackage{mathtools}
+%\usepackage{gensymb}
 
-\usepackage[a4paper, left=1cm, right=1cm, top=2cm, bottom=3cm]{geometry}
+%\usepackage[a4paper, left=1cm, right=1cm, top=2cm, bottom=3cm]{geometry}
 
-\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
-\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
-\DeclarePairedDelimiter\inner{\langle}{\rangle}%
-\newcommand{\ffrac}[2]{\ensuremath{\frac{\displaystyle #1}{\displaystyle #2}}}
 
-\begin{document}
+%\begin{document}
 \section{Fourier Transform in a Nutshell}
 Key Idea: Compare signal with sinusoids of various frequencies and phases. 
 
@@ -27,7 +23,7 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
 \subsubsection*{Sinussoidal signal}
 \begin{itemize}
     \item
-        Function $g: \mathbb{R} \rightarrow \mathbb{R}$ defined by $g(t) = A sin(2\pi(\omega t - \varphi))$
+        Function $g: \mathbb{R} \rightarrow \mathbb{R}$ defined by $g(t) = A \sin(2\pi(\omega t - \varphi))$
     \item
         $A$ corresponds to the \textbf{amplitude}, $\omega$ to the \textbf{frequency} and $\varphi$ to the \textbf{phase}
     %\item
@@ -36,7 +32,7 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
         In Fourier analysis: prototype oscillations that are normalized with regard to their power by setting $A = \sqrt2$
     \item
         Thus for each frequency parameter $\omega$ and phase parameter $\varphi$ we obtain a sinusoid 
-        $$cos_{\omega, \varphi}(t) = \sqrt2 cos(2\pi(\omega t - \varphi))$$
+        $$\cos_{\omega, \varphi}(t) = \sqrt2 \cos(2\pi(\omega t - \varphi))$$
     \item
         Phase parameter only has to be considered for $\varphi \in [0, 1)$
 \end{itemize}
@@ -52,7 +48,7 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
         $$d_\omega = max_{\varphi \in [0,1)} (\int_{t \in \mathbb{R}} f(t) cos_{\omega, \varphi}(t) dt)$$
         $$\varphi_\omega = argmax_{\varphi \in [0,1)} (\int_{t \in \mathbb{R}} f(t) cos_{\omega, \varphi}(t) dt)$$
     \item
-        \textbf{Fourier Transform:} "collection" of all coefficients $d_\omega$ and $\varphi_\omega$ for $\omega \in \mathbb{R}$
+			\textbf{Fourier Transform:} \enquote{collection} of all coefficients $d_\omega$ and $\varphi_\omega$ for $\omega \in \mathbb{R}$
 \end{itemize}
 \subsubsection*{Complex Numbers}
 \begin{itemize}
@@ -67,18 +63,18 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
     \item
         Deriving polar coordinates:
         $$ \abs{x} = \sqrt{a^2 + b^2} $$
-        $$ \gamma = atan2(b, a) $$
+        $$ \gamma = a\tan2(b, a) $$
     \item
         Regaining complex number:
-        $$ exp(i\gamma) = cos(\gamma) + isin(\gamma) $$
-        $$ c = \abs{c} exp(i\gamma)$$
+        $$ \exp(i\gamma) = \cos(\gamma) + i\sin(\gamma) $$
+        $$ c = \abs{c} \exp(i\gamma)$$
 \end{itemize}
 \subsubsection*{Complex Definition of the Fourier Transform}
 \begin{itemize}
     \item
         Idea: encode $d_\omega$ and $\varphi_\omega$ by a single complex number
     \item
-        $ c_\omega = \ffrac{d_\omega}{\sqrt{2}} exp(2\pi i(-\varphi_\omega))$
+        $ c_\omega = \ffrac{d_\omega}{\sqrt{2}} \exp(2\pi i(-\varphi_\omega))$
     \item
         $\hat{f}(\omega) = c_\omega$
     \item     
@@ -174,7 +170,7 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
     \item
         To compute all coefficients, one needs $N^2$ operations
     \item
-        \textbf{Fast Fourier Transform}: Recursive computation, works particularly well in the case of N is a power of two, $Nlog_2N$ operations
+        \textbf{Fast Fourier Transform}: Recursive computation, works particularly well in the case of N is a power of two, $N\log_2N$ operations
 \end{itemize}
 
 \subsection{Short-Time Fourier Transform}
@@ -215,4 +211,3 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
         \textbf{Spectrogram}: two-dimensional representation of the squared magnitude of the STFT
         $$Y(m,k) = \abs{X(m,k)}^2$$
 \end{itemize}
-\end{document}
