@@ -1,4 +1,4 @@
-\documentclass[fleqn,12pt]{scrartcl}
+\documentclass[fleqn,12pt,draft]{scrartcl}
 \usepackage{makeidx}
 \usepackage[utf8]{inputenc}
 \usepackage{color}
@@ -45,6 +45,7 @@
 }
 
 \usepackage{mathtools}
+\usepackage{textcomp}
 \usepackage{gensymb}
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}%
 \DeclarePairedDelimiter\norm{\lVert}{\rVert}%
@@ -64,6 +65,7 @@
 \newcommand{\blattn}{Blatt 5}
 \makeindex
 \title{Music Processing Analysis --- Zusammenfassung}
+\author{Magnus}
 \begin{document}
 \maketitle
 \begin{center}Kein Anspruch auf Vollst"andigkeit oder Korrektheit und so!\end{center}
@@ -74,5 +76,7 @@
 \include{fourier}
 \include{dtw}
 \include{msa}
+\include{tracking}
+\include{audio_retrieval}
 
 \end{document}

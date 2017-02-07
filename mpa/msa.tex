@@ -90,15 +90,21 @@
 	\item
 		Coverage of $\mathcal{A}$: $\gamma(\mathcal{A}) := \sum_{k=1}^K \abs{\alpha_k}$
 	\item
-		Path family $\mathcal{P} := \Set{P_1, P_2, \dots, P_K}$, induced segments should be disjoint $\Set{\pi_1(P_1), \dots, \pi_1(P_K)}$ has to be a segment family
+		Path family $\mathcal{P} := \Set{P_1, P_2, \dots, P_K}$, induced segments should be disjoint 
+		
+		$\Set{\pi_1(P_1), \dots, \pi_1(P_K)}$ has to be a segment family
 	\item
 		Score of Path family: $\sigma(\mathcal{P}):= \sum_{k=1}^K \sigma(P_K)$
 	\item
 		Optimal path family: $\mathcal{P}^* := \argmax_{\mathcal{P}} \sigma(\mathcal{P})$
 	\item
-		Following computation of an optimal path family is $\mathcal{O}(\text{length of segment} \cdot \text{length of recording})$
+		Following computation of an optimal path family is 
+		
+		$\mathcal{O}(\text{length of segment} \cdot \text{length of recording})$
 	\item
-		Recall DTW: align two sequences $X$ and $Y$, step size condition $\Sigma = \Set{(2,1), (1,2), (1,1)}$
+		Recall DTW: align two sequences $X$ and $Y$, step size condition 
+		
+		$\Sigma = \Set{(2,1), (1,2), (1,1)}$
 	\item
 		When computing path family over $\alpha$, role of $Y$ is taken over by $\alpha$
 	\item
@@ -159,4 +165,30 @@
 
 
 \subsection{Novelty based segmentation}
+\begin{itemize}
+	\item
+		Goals:
+		\begin{itemize}
+			\item
+				Find instances where musical/structural changes occur
+			\item
+				Find transition between subsequent musical parts
+			\item
+				Combine global and local aspects within a unifying framework
+		\end{itemize}
+	\item
+		Main idea: use checkerboard-like kernel function to detect corner points on main diagonal of SSM
+	\item
+		Features to use:
+		\begin{itemize}
+			\item
+				Enhanced SSM
+			\item
+				Time-lag SSM (morph SSM into parallelogram, such that diagonal is horicontal)
+			\item
+				Cyclic time-lag SSM (wrap bottom part of parallelogram up, such that the SSM is quadratic again
+			\item
+				Features are columns of CT-LSSM
+		\end{itemize}
+\end{itemize}
 

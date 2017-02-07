@@ -45,8 +45,8 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
 \begin{itemize}
     \item
         For a fixed frequency $\omega \in \mathbb{R}$, we define
-        $$d_\omega = max_{\varphi \in [0,1)} (\int_{t \in \mathbb{R}} f(t) cos_{\omega, \varphi}(t) dt)$$
-        $$\varphi_\omega = argmax_{\varphi \in [0,1)} (\int_{t \in \mathbb{R}} f(t) cos_{\omega, \varphi}(t) dt)$$
+        $$d_\omega = \max_{\varphi \in [0,1)} \left(\int_{t \in \mathbb{R}} f(t) \cos_{\omega, \varphi}(t) \id t\right)$$
+        $$\varphi_\omega = \argmax_{\varphi \in [0,1)} \left(\int_{t \in \mathbb{R}} f(t) \cos_{\omega, \varphi}(t) \id t\right )$$
     \item
 			\textbf{Fourier Transform:} \enquote{collection} of all coefficients $d_\omega$ and $\varphi_\omega$ for $\omega \in \mathbb{R}$
 \end{itemize}
@@ -83,8 +83,8 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
         Fourier transform can be computed by
 
         \begin{align*}
-            \hat{f}(\omega) = & \int_{t \in \mathbb{R}} f(t) exp(-2\pi i \omega t) dt\\
-            & \int_{t \in \mathbb{R}} f(t) cos(-2\pi \omega t) dt + i \int_{t \in \mathbb{R}} f(t) sin(-2 \pi \omega t) dt
+            \hat{f}(\omega) = & \int_{t \in \mathbb{R}} f(t) \exp(-2\pi i \omega t) \id t\\
+            & \int_{t \in \mathbb{R}} f(t) \cos(-2\pi \omega t)  \id t + i \int_{t \in \mathbb{R}} f(t) \sin(-2 \pi \omega t) \id t
         \end{align*}
     \item
         Real part is obtained by comparing $f$ with a cosine function, the imaginary part by comparing $f$ with a sine function
@@ -109,7 +109,7 @@ Key Idea: Compare signal with sinusoids of various frequencies and phases.
 \subsubsection*{Equidistant sampling}
 \begin{itemize}
     \item
-        Digitization: Converting analog signals into finite representations (analog-to-digital conversion) 
+        Digitization: Converting analog signals into finite representations (analog-to-di\-gi\-tal conversion) 
     \item
         Given an analog signal $f: \mathbb{R} \rightarrow \mathbb{R}$ and a positive real number $T > 0$, one defines a function $x: \mathbb{Z} \rightarrow \mathbb{Z}$ by setting $x(n) = f(nT)$
     \item

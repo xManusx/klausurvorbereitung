@@ -1,0 +1,62 @@
+\section{Tempo and Beat Tracking}
+\begin{itemize}
+	\item
+		Measure, Tactum (Beat), Tatum
+	\item
+		Steps for energy based:
+		\begin{enumerate}
+			\item
+				Take Waveform
+			\item
+				Amplitude Squaring
+			\item
+				Windowing (Energy envelope)
+			\item
+				Differentiation
+			\item
+				Half wave rectification (throw away bottom part, only energy increases are relevant for onsets)
+			\item
+				Peak picking
+		\end{enumerate}
+		Often only works for percussive music
+	\item
+		Spectral-Based:
+		\begin{enumerate}
+			\item
+				Take Spectrogram
+			\item
+				Logarithmic Compression ($Y = \log(1+C\cdot \abs{X})$)
+			\item
+				Differentiation: First-order temporal difference
+			\item
+				Frame-wise Accumulation  of all positive intensity changes
+			\item
+				Normalization: Substraction of local average
+			\item
+				Peak picking
+		\end{enumerate}
+	\item
+		Tempogram: a time-tempo representation that encodes the local tempo of a music signal over time
+
+		STFT based:
+		\begin{itemize}
+			\item
+				Compute STFT of novelty curve
+			\item
+				Convert frequency axis (given in Hertz) into tempo axis (given in BPM)
+			\item
+				Magnitude spectrogram indicates local tempo
+		\end{itemize}
+		Emphasis of tempo harmonics (integer multiples of tempo, eigth, sixteenth, \dots)
+
+		Autocorrelation:
+		\begin{enumerate}
+			\item
+				Compare novelty curve with time-lagged local sections of itself
+			\item
+				Convert lag-axis (given in seconds) into tempo axis (BPM)
+			\item
+				Autocorrelogram indicates local tempo
+		\end{enumerate}
+		Emphasis of tempo subharmonics (integer fractions, measures, sections)
+\end{itemize}
