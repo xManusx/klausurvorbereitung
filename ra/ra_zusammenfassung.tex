@@ -1,0 +1,84 @@
+\documentclass[a4paper,12pt]{scrartcl}
+
+\usepackage[ngerman]{babel}
+\usepackage[utf8]{inputenc}
+
+%\renewcommand{\familydefault}{\sfdefault}
+
+
+\usepackage[babel]{csquotes}
+
+\newcommand{\textsub}[1]{%
+	$_\text{#1}$}
+
+\usepackage{lmodern}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+
+\usepackage{graphicx}
+
+%\usepackage{amssymb}
+%\usepackage{mathtools}
+%%\usepackage{gensymb}
+%\usepackage{float}
+
+%\usepackage[a4paper, left=1cm, right=1cm, top=2cm, bottom=3cm]{geometry}
+
+%\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+%\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+%\DeclarePairedDelimiter\inner{\langle}{\rangle}%
+%\newcommand{\ffrac}[2]{\ensuremath{\frac{\displaystyle #1}{\displaystyle #2}}}
+\usepackage{stmaryrd} % für \lightning
+
+\begin{document}
+
+\pagenumbering{gobble}
+\title{Rechnerarchitektur Zusammenfassung}
+\author{Magnus Berendes/\href{mailto:magnus.berendes@fau.de}{magnus.berendes@fau.de}}
+\date{\today}
+\maketitle
+
+\newpage
+
+\pagenumbering{Roman}
+
+\tableofcontents
+
+
+\newpage
+\pagenumbering{arabic}
+
+
+\input{kap1}
+
+
+
+\newpage
+\section{Homogene und heterogene Multikern-Architekturen}
+\subsection{Motivation Multikern Architekturen}
+\subsection{Leistungsanalyse und -bewertung homogener und heterogener Multikern Prozessoren}
+\subsection{Beispiel homogene Multikern-Architekturen}
+\subsubsection{Intel Skylake, Haswell, Sandy Bridge}
+\subsubsection{ AMD Ryzen}
+
+\subsection{Beispiel heterogene Multikern Architekturen}
+\subsubsection{GPGPUs}
+\subsubsection{Ausblick: Vielkern-Architekturen}
+
+\subsection{Programmierung homogener und heterogener Multikern-Architekturen}
+
+\newpage
+\section{Eingebettete Prozessorachitekturen}
+\subsection{Digitale Signalprozessoren}
+\subsection{Energiearme eingebettete Prozessoren}
+\subsubsection{MIPS}
+\subsubsection{ARM}
+\subsubsection{RISC-V}
+
+\newpage
+\section{Parallelrechnerarchitekturen}
+
+
+\end{document}

@@ -1,0 +1,473 @@
+\documentclass{scrartcl}
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{braket}
+\usepackage{mathtools}
+\usepackage{textcomp}
+\usepackage{gensymb}
+
+\usepackage[a4paper, left=1cm, right=1cm, top=2cm, bottom=3cm]{geometry}
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+\DeclarePairedDelimiter\inner{\langle}{\rangle}%
+\newcommand{\ffrac}[2]{\ensuremath{\frac{\displaystyle #1}{\displaystyle #2}}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\begin{document}
+
+\section{Fourier stuff}
+\begin{itemize}
+    \item
+        Continous Fourier Transform:
+				\marginpar{\Huge ! \hfill}
+        $$\hat{f}(\omega) = \int_{t \in \mathbb{R}} f(t) e^{-2 \pi i \omega t} dt$$
+    \item
+        Polar representation:
+        $e^{i \gamma} = \cos(\gamma) + i \sin(\gamma)$, $c = |c| \cdot e^{i \gamma}$\\
+    \item
+        Sampling:
+        $$x(n) = f(nT)$$
+        $$\Omega = \frac{F_s}{2} = \frac{1}{2} T$$ 
+    \item
+        Discrete Fourier:
+        $$ \hat{x}(\omega) = \sum_{n \in \mathbb{Z}} T f(nT) e^{-2 \pi i \omega n T} \approx \hat{f}(\omega) $$
+        Set $T=1$, assume $n \in [0:N-1]$ and sample frequency axis by fractions of $N$:
+        $$ X(k) = \hat{x}(\frac{k}{N}) =  \sum_{n = 0}^{N-1} x(n) e^{-2 \pi i k n/N} \approx \hat{f}(\omega) $$
+    \item 
+        DFT vs. FFT: $O(N^2)$ and $O(n \, \log_2 \, n)$
+    \item
+        $F_{coef}(k) = \frac{k \cdot F_s}{N}$, $k=N/2$ $\rightarrow$ Niquist frequency
+			\marginpar{\Huge ! \hfill}
+    \item
+        Discrete STFT:
+        $$X(m, k) = \sum_{n=0}^{N-1} x(n+mH) w(n) e^{-2 \pi i k n/N}$$
+    \item
+        Spectrogram: $ Y(m,k) = |X(m,k)|^2$
+    \item
+        $(\Gamma_{\gamma} \cdot Y)(m, k) = \log(1 + \gamma \cdot Y(m,k))$, with $\Gamma_{\gamma}(v) = \log(1 + \gamma \cdot v)$ (bringt kleine Werte nach oben)
+    \item
+        Center frequency $F_{pitch}(p) = 2^{(p-69)/12} \cdot 440$
+    \item
+        Pitch set $P(p) = \{k: [0:K]: F_{pitch}(p-0.5) \leq F_{coef}(k) < F_{pitch}(p+0.5)\}$
+    \item
+        Log-frequency spectrogram: $Y_{LF}(m,p) = \sum_{k \in P(p)} |X(m,k)|^2$
+    \item
+        Chromagram: $C(m,c) = \sum_{\{ p \in [0:127] | p \; mod \; 12 = c\}} Y_{LF}(m,p)$
+    \item
+        $T_{coef}(m) = \frac{m \cdot H}{F_s}$\\
+			\marginpar{\Huge ! \hfill}
+
+    \item
+        CFT: aperiodic, cont. signal $\rightarrow$ cont. spectrum
+    \item
+        DFT: aperiodic, periodically continued, finite, disrecte signal $\rightarrow$ discrete, finite spectrum
+\end{itemize}
+\section{HPSS}
+\begin{itemize}
+    \item
+        Harmonically and percussively enhanced spectromgrams $\tilde{Y}_p$ and $\tilde{Y}_h$: Median filter along time or frequency axis
+    \item
+        Binary mask $M_p(m,k)$: 1 if $\tilde{Y}_p \geq \tilde{Y}_h$, else zero (for percussive harmonic mask)
+    \item
+        Percussive STFT: $X_p = X \cdot M_p$
+    \item
+        HPSS for chroma enhancement: filter out percussive stuff
+    \item
+        HPSS for onset detection: filter out harmonic stuff
+\end{itemize}
+
+\section{Music Synchronization}
+\begin{itemize}
+    \item
+        General: For a given position in one representation of a piece of music, determine the corresponding position within another representation
+    \item
+        \textbf{Dynamic Time Warping}: Given two chroma vectors $X$ and $Y$, find non-linear alignment in order to compensate differences in tempo. Corresponds to finding valley of low cost within cost matrix.
+    \item
+        Local cost measure $c: F \times F \rightarrow \mathbb{R}$
+    \item
+        Evaluation $c$ for every pair of feature vectors yields cost matrix $C(n,m) = c(x_n, y_m)$
+    \item
+        $(N-M)$-Warping Path is sequence $P=(p_1, \dots, p_L)$ with $p_l = (n_l, m_l)$:
+			\marginpar{\Huge ! \hfill}
+        \begin{itemize}
+            \item
+                Boundary condition: $p_1 = (1,1)$ and $p_L = (N,M)$
+            \item
+                Monotonicity condition: $n_1 \leq \dots \leq n_L$ and $m_1 \leq \dots \leq m_L$
+            \item
+                Step size condition: $p_{l+1} - p_l \in \{(1,0), (0,1), (1,1)\}$
+        \end{itemize}
+    \item
+        Total cost of $P$: $c_P(X,Y) = \sum_{l=1}^{L} C(n_l, m_l)$
+    \item
+			Dynamic Time Warping distance: 
+			
+			$ DTW(X,Y) = c_{P^*}(X,Y) = \min\Set{c_P (X,Y) \; | \; \text{P is an (N,M)-warping path}}$
+\end{itemize}
+\section{Music Structure Analysis}
+\begin{itemize}
+    \item
+        General: Divide a music representation into temporal segments that correspond to musical parts and to group these segments into musically meaningful categories
+    \item
+        Comparing every feature vector with one another via a similarity measure yields a \textbf{Self-Similarity Matrix}
+    \item
+        Path-like structures: repetitions (e.g. recurring rythmic, harmonic or melodic patterns)
+    \item
+        Block-like structures: homogenity (e.g. consistent timer, presence of specific instrumentation)
+    \item
+        Path over segment $\alpha = [s:t]$ is a sequence $P = ((n_1, m_1), \dots, (n_L, m_L))$ with
+        \begin{itemize}
+            \item
+                $m_1 = s, m_L = t$
+            \item
+                $(n_{l+1}, m_{l+1}) - (n_{l}, m_{l}) \in \{(2,1), (1,2), (1,1)\}$
+        \end{itemize}
+    \item
+        Similar for blocks (subset of $[1:N] \times [1:N]$)
+    \item
+        Path-similarity, Block-similarity of segments
+    \item
+        Algorithmic pipeline:
+        \begin{itemize}
+            \item
+                Transform recording into feature sequence
+            \item
+                Compute SSM
+            \item
+                Find blocks and paths of overall high score (which each defines a pair of similar segments)
+            \item
+                Cluster segments into groups
+        \end{itemize}
+    \item
+        Enhancement strategies:
+        \begin{itemize}
+            \item
+                Downsample and smooth chroma features $\rightarrow$ emphasis on rough harmonic content
+            \item
+                Path smoothing along direction of main diagonal (only works if no relative tempo differences between the segments)
+            \item
+                Path smoothing alone multiple directions and picking maximum values for final SSM
+            \item
+                Transposition invariance: Apply cyclic shifting on one sequence before comparing, do for all 12 pitches, pick maximum values for final SSM
+            \item
+                Global thresholding/binarization
+        \end{itemize}
+    \item
+        Audio Thumbnailing:
+        \begin{itemize}
+            \item
+                Goal: automatically determine the most representative section
+            \item
+                Path familiy: Set of paths over a segment $\alpha$, which induced segments don't overlap
+            \item
+                Intoduce fitness of a segment/path family:
+                \begin{itemize}
+                    \item
+                        P = normalize ( coverage(segment) - length(segment)) $\in [0,1]$
+                    \item
+                        R = normalize ( score(segment) - length(segment)) $\in [0,1]$
+                    \item
+                        $ F = 2 \cdot P \cdot R / (P + R)$
+                \end{itemize}
+            \item
+                Scape plot:
+                \begin{itemize}
+                    \item
+                        x: center of segment
+                    \item
+                        y: length of segment
+                    \item
+                        z: fitness
+                \end{itemize}
+        \end{itemize}
+    \item
+        Novelty-Based Segmentation: Shift checkboard kernel along main diagonal, structure features
+\end{itemize}
+
+\section{Tempo and Beat Tracking}
+\begin{itemize}
+    \item
+        Onset Detection
+    \item
+        Beat tracking: Find sequence of perceived pulse positions (phase + period)
+    \item
+        Tempo estimation: Reciprocal of beat period
+\end{itemize}
+\textbf{Onset Detection}
+\begin{itemize}
+    \item
+        Pipeline: 1) Convert into feature sequence, 2) Yield novelty function, 3) Peak picking
+    \item
+        Energy-Based:
+        \begin{enumerate}
+            \item
+                Amplitude squaring
+            \item
+                Windowing
+            \item
+                Differentiation
+            \item
+                Half wave rectification
+            \item
+                Peak picking
+        \end{enumerate}
+    \item
+        Spectral-Based:
+        \begin{enumerate}
+            \item
+                Apply logarithmic compression onto spectrogram
+            \item
+                Differentiation (yields gradient spectrogram)
+            \item
+                Accumulation frame-wise (yields novelty function)
+            \item
+                Apply averaging window onto function and substract from original (Normalization)
+            \item
+                Peak picking
+        \end{enumerate}
+\end{itemize}
+\textbf{Tempo Analysis}
+\begin{itemize}
+    \item
+        Assumptions: 1) Beat positions occur at note onset positions 2) Beat positions are equally spaced
+    \item
+        Tempogram: Indicated for each time instance the local relevance of a specific tempo for a given music recording
+    \item Fourier Tempogram:
+        \begin{itemize}
+            \item
+                Compare novelty curve with windowed sinusoids
+            \item
+                Generally indicates tempo harmonics
+        \end{itemize}
+    \item
+        Autocorrelation Tempogram:
+        \begin{itemize}
+            \item
+                Compare windowed novelty curve with time-shifted version (time lag) of itself
+            \item
+                Generally indicates tempo subharmonics
+        \end{itemize}
+\end{itemize}
+\textbf{Predominant local pulse (PLP)}
+\begin{itemize}
+    \item
+        For each time position of Fourier tempogram compute maximizing tempo parameter and it's phase
+    \item
+        Sum up all windowed sinusoids with corresponding phase and frequency (overlap-add)
+    \item
+        Half wave rectify
+    \item
+        Local periodicity enhancement of the original novelty function
+\end{itemize}
+\section{Content-Based Audio Retrival}
+\begin{itemize}
+    \item
+        Audio Identification with fingerprints based on spectral peaks
+    \item
+        Apply peak picking strategy that identifies time-frequency points that have a higher magnitude than all neighbors ($\rightarrow$ constallation map)
+    \item
+        Naive approach: Shift query over database documents
+    \item
+        Indexing: 
+        \begin{itemize}
+            \item 
+                Inverted list $L(h)$ consisting of time stamps $n$ for $(n,h)$ out of $D$
+
+            \item
+                $L(h) - n$ contains all the shifts that, when applied to query point $(n,h)$ result in match
+            \item
+                If $L(h) -n$ contains same shifts for different $h$'s $\rightarrow$ query matches amount of equal shift value
+            \item
+                Without indexing: Linear in len(Q) $\cdot$ len(D)
+            \item
+                With indexing: Access and process len(Q) lists of len(D)/numberOfHashes (Assuming hash values are evenly distributed)  $\rightarrow$ gain of numberOfHashed $\rightarrow$ more hashes/shorter inverted lists are better
+        \end{itemize} 
+    \item
+        Shazam:
+        \begin{itemize}
+            \item
+                Idea: Increase number of hashes/Reduce length of hash lists
+            \item
+                Fix anchor point and define target zone
+            \item
+                Use every point as anchor point
+            \item
+                Hash: $(f_1, f_2, \Delta t)$ $\rightarrow$ increased specifity of hashes $\rightarrow$ much smaller hash lists $\rightarrow$ profit
+        \end{itemize}
+\end{itemize}
+
+\section{Chord Recognition}
+\begin{itemize}
+    \item
+        Goal: Given a audio recording of a piece of music, find which chords are played at which time
+\end{itemize}
+\subsection{Template-Based Chord Recognition}
+\begin{itemize}
+    \item
+        First step: transform recording into a sequence $X = (x_1, x_2, \dots, x_N)$ of feature vectors
+    \item
+        Second step: 
+
+        \begin{itemize}
+            \item 
+                map feature vectors to a chord label via pattern matching
+            \item
+                Precompute a set of templates (prototypical chroma vectors the represents a specific mucial chord)
+            \item
+                Similarity measure
+        \end{itemize}
+\end{itemize}
+\subsubsection*{Ambiguities}
+\begin{itemize}
+    \item
+        Chord Ambiguities: Chords may share same notes
+    \item
+        Acoustic Ambiguities: Harmonics, Major-Minor confusion 
+    \item
+        Tuning: Instrument not tuned as specified by the center frequency of the equal-tempered scale ($\rightarrow$ notes energy gets spread across neighboring chroma band)
+    \item
+        Segmentation: Broken chords
+\end{itemize}
+\subsubsection*{Enhancement Strategies}
+\begin{itemize}
+    \item
+        Templates with harmonics (e.g. energy of $k^{th}$ harmonic is $\alpha^{k-1}$ for some $\alpha \in [0,1]$)
+    \item
+        Templates from examples (e.g. take average chroma vectors), naturally inherit the musical and acoustic properties. It sufficies to learn $C$ and $Cm$ chord and apply cyclic shifting
+    \item
+        Spectral enhancement, "smoothing" (e.g. Logarithmic compression)
+    \item
+        Temporal smoothing, Prefiltering (e.g. shift averaging filter over chroma feature sequence)
+\end{itemize}
+\subsection{HMM-Based Chord Recognition}
+\begin{itemize}
+    \item
+        Template-based chord recognizer only considers current frame, not frame sequence
+    \item
+        Some harmonic progressions are much more likeli then other, e.g. $I-IV-V-I$
+\end{itemize}
+\subsubsection*{Markov Chains and Transition Probabilities}
+\begin{itemize}
+    \item
+        Considered chords are refered to as \textbf{states}, $\mathcal{A} = \{\alpha_1, \alpha_2, \dots, \alpha_I\}$
+    \item
+        The change from one state to another is specified according to set of probabilities (assumption: probability only depends on current state, not the ones before, "memoryless"), \textbf{state transition probabilities}
+    \item 
+        \textbf{Initial state probabilities}
+\end{itemize}
+\subsection*{Hidden Markov Models}
+\begin{itemize}
+    \item
+        With Markov chain we can compute probability for a given observation consisting of a sequence of chords
+    \item
+        Chord recognition task however we observe a sequence of chroma vectors
+    \item
+        Each state is equipped with a probability function that expresses the likelihood for a given chord type to output or emit a certain feature vector (\textbf{emission, output probabilities})
+    \item
+        Discrete HMM: Output space is assumed to be discrete and finite $\rightarrow$ Finite set of output elements $\mathcal{B} = \{\beta_1, \dots, \beta_2\}$
+    \item
+        Summary: HMM is fully specified by five tuple\\ (set of states, state trans. probs., init state probs. observation syms., emission probs)
+\end{itemize}
+\subsection*{Evaluation and Model Specification}
+\textbf{Evaluation problem}
+\begin{itemize}
+    \item
+        Given a observation sequence $O$, compute probability $P(O|\Theta)$
+    \item
+        "Score" of how well a given model matches a given observation sequence, interesting when one has to choose among several competing models
+    \item
+        $P(O|\Theta) = \sum_{S=(s_1, s_2, s_N)} P(0, S|\Theta)$
+\end{itemize}
+\textbf{Uncovering Problem}
+\begin{itemize}
+    \item
+        Find state sequence that best explains observation sequence 
+    \item
+        Possible optimization criterion:
+        $S^* = \underset{S = (s_1, s_2, \dots, s_N)}{\argmax} P(O,S|\Theta)$
+    \item
+        Viterbi Algorithm:
+        \begin{itemize}
+            \item
+                Observation sequence $O=(o_1, \dots, o_N)$
+            \item
+                $O(1:n) = (o_1, \dots, o_n)$
+            \item
+                $D(i:n) = {\max_S} \; P(O(1:n), (s_1, \dots, s_n=\alpha_i)|\Theta)$, highest probability of $O(1:n)$ with state sequence ending on $\alpha_i$
+            \item
+                $(I \times N)$ matrix $D$ can be computed recursively\\
+            \item
+                $ S^* = (\alpha_i, \dots, \alpha_{i_N})$
+            \item
+                Apply backtracking procedure
+            \item
+                $i_N = \underset{j \in [1:I]}{argmax} D(j, N)$, ending state of state sequence, which is most probable to generate observations
+            \item
+                $i_n = \underset{j \in [1:I]}{argmax} \; \; a_{j, i_{n+1}}D(j, n)$, ending state of state sequence of length $n$, which is most probable to create observations $O(1:n)$ weighted with transition probability to previously calculated state $i_{n+1}$\\
+            \item
+                $O(I^2 N)$ operations much better than brute force $O(I^N)$
+        \end{itemize}
+\end{itemize}
+\textbf{Estimation Problem}
+\begin{itemize}
+    \item
+        Given an observation sequence $O$, improve probability measures of models
+    \item
+        Baum-Wekch algorithm
+\end{itemize}
+\subsection*{Application to Chord Recognition}
+\textbf{Specification of Emission Probabilities}
+\begin{itemize}
+    \item
+        To make HMM discrete (make observations coming from a finite output space) one can introduce a so-called codebook (set of prototypical vectors). \textbf{Quantization}, clustering
+    \item
+        Alternative: continuous HMMs, emission probability becomes continuous pdf
+\end{itemize}
+\textbf{Specification of Transition Probabilities}
+\begin{itemize}
+    \item
+        Can be defined manually by expert
+    \item
+        Automatic approach:
+        \begin{itemize}
+            \item
+                We assume the training set is represented by a sequence of frames and that each frame is labeled with ont of the states
+            \item
+                Next, count how often each of the possible chord transitions occurs in the training data
+            \item
+                $\mu(i,j) = $ number of transitions $\alpha_i \rightarrow \alpha_j$, number of bigrams with first chord as $\alpha_i$ and second chord as $\alpha_j$
+            \item
+                Transition probability matrix $A = (a_{ij})$ with $a_{ij} = \ffrac{\mu(i,j)}{\sum_k \mu(i,k)}$
+            \item
+                Dominated by diagonal matrix (self-transition probabilities): Chord durations occuring are much longer than the frame length
+            \item
+                Other elements, e.g. $\alpha_{i, i+7}$ are also much higher (in this example because change from tonic to dominant more probable) $\rightarrow$ secondary diagonals
+            \item
+                Indicates that transition probabilities depend on functional relations, independent of underlying key
+            \item
+                Increase training data:
+                \begin{itemize}
+                    \item
+                        Take each bigram and shift chroma features, such that first chord corresponds to $C$ or $Cm$ $\rightarrow$ C normalized bigram
+                    \item
+                        Take 12 C normalized bigrams
+                    \item
+                        Normalize thme to the 12 different chroma values
+                    \item
+                        Transposition-invariant transition probability matrix
+                \end{itemize}
+
+        \end{itemize}
+\end{itemize}
+\textbf{Evaluation}
+\begin{itemize}
+    \item
+        Context-sensitive smoothing: recognizer tends to stay in the current chord rather than change to another one. Chord changes are only performed when the relatively low transitions probabilities are compensated by a substantial increase of emission probability
+    \item
+        High self transitions are the main factor
+\end{itemize}
+\end{document}
