@@ -192,7 +192,7 @@
 							\centering
 							\includegraphics[width=0.9\textwidth]{img/branchtargetbuffer.png}
 							\caption{Funktionsweise und Aufbau des branch target buffers}
-							\label{fig:hazards}
+							\label{fig:btb}
 						\end{figure}
 				\end{itemize}
 			\item
@@ -294,7 +294,7 @@
 							\centering
 							\includegraphics[width=0.7\textwidth]{img/scoreboard.png}
 							\caption{Scoreboard Steuerungsalgorithmus, S1 op S2 $\rightarrow$ D, $F_i$ Zielregister, $F_j,F_k$ Quellregister, $Q_j,Q_k$ Funktionseinheiten die Quellregisterdaten erzeugen, $R_j,R_k$, Flags die anzeigen ob $F_j$ oder $F_k$ nutzbar sind}
-							\label{fig:hazards}
+							\label{fig:scoreboard}
 						\end{figure}
 \end{itemize}
 \subsubsection{Tomasolu}
@@ -335,9 +335,261 @@
 	\item
 		Bei Exceptions klar klar, welche Instruktionen abgeschlossen sein dürfen
 \end{itemize}
-\subsection{Optimale Pipelinetiefe}
 \subsection{Cache Architekturen}
-\subsubsection{Wiederholung: Cache-Organisation}
+\begin{itemize}
+	\item
+		Mehrstufige Speicherhierarchie schafft Abhilfe für langsamen und begrenzten Speicher
+	\item
+		Register \ra{} L$_{1,2,3,4}$-Cache \ra{} Hauptspeicher \ra{} Festplattencache \ra{} Festplatte
+	\item
+		Cache speicher Blöcke, bestehend aus mehreren Worten \ra{} zeitliche und räumliche Lokalität von Daten Grundlage von effizienten Caches
+\end{itemize}
+\subsubsection{Cache-Organisation}
+\begin{itemize}
+	\item
+		HIerarchie, Cache Typen und Anordnung:
+		\begin{itemize}
+			\item
+				L1 / Primär
+				\begin{itemize}
+					\item
+						Bestandteil jedes Mikroprozessors
+					\item
+						Split-Cache: getrennte Speicherung von Daten und Befehlen
+					\item
+						\SI{32}{kB} bei Intel Sandy-Bridge -- Sky-Lake
+					\item
+						Kurze Blöcke: \SIrange{32}{64}{B}
+				\end{itemize}
+			\item
+				L2 / Sekundär
+				\begin{itemize}
+					\item
+						Unified-Cache: Daten und Befehle zusammen
+					\item
+						Größe: \SI{256}{KB} -- \SI{2}{MB}
+					\item
+						\idr\ gleiche Blockgröße wie L1
+				\end{itemize}
+			\item
+				Mittlerweile Tertiär / L3 Caches: bei sandy bridge core i7 (\SI{1}{MB}), Sandy Bridge Xeon (1--\SI{20}{MB})
+
+		\end{itemize}
+	\item
+		Platzierung/Identifikation
+		\begin{itemize}
+			\item
+				Cache Organisation legt 2 Dinge fest:
+				\begin{itemize}
+					\item
+						Platzierungsproblem: welcher Hauptspeicherblock in welchen Cacheblock
+					\item
+						Identifikationsproblem: gewünschtes Datum im Cache wiederfinden
+					\item
+						3 Typen: direct, voll assoziativ, n-fach assoziativ
+				\end{itemize}
+		\end{itemize}
+	\item
+		Direct mapping
+		\begin{itemize}
+			\item
+				Mit $\mod$ wird jeder HS Adresse $B$ ein Block $m$ von insgesamt $N$ Cache-Zeilen zugewiesen: $m = B \mod N$
+
+				\texttt{0x000001, 0xffff01, 0xacab01}  kommen in gleichen Cacheblock
+		\end{itemize}
+	\item
+		Voll assoziativ: beliebige Abbildung
+	\item
+		n-Fach assoziativ:
+		\begin{itemize}
+			\item
+				Cache Blöcke werden in $s$ Mengen mit jeweils $n$ Blöcken unterteilt: $s = \frac{N}n$
+			\item
+				HS Block kommt innerhalb der Menge an belibigen Platz
+			\item
+				allgemeiner Fall, für $n=N$ vollassoziativ, für $n=1$ direkt
+			\item
+				Abbildung HS Block \ra\ Cache-Block ist surjektiv (HS Block kann in mehreren Cacheblöcken gespeichert werden)
+
+				\Ra\ zusätzlich zu Datenwerten Kennung notwendig, die HS Block safe identifiziert: Tag
+			\item
+				HS Adresse in zwei Teile mit $w+s$ Bits aufteilen
+			\item
+				Niederwertigsten $w$ bits identifizieren eindeutig Wort
+			\item
+				Höchstwertigen $s$ bits spezifizieren Speicherblock
+			\item
+				Höchstwertigen Bits nochmals aufteilen: 
+				\begin{itemize}
+					\item
+						Feld mit $r$ (Index-)Bits = Adresse der Cache Zeile
+					\item
+						Feld mit $s-r$, das dem Tag (ermöglicht eindeutige Identifizierung des HS Blocks im Cache) entspricht
+				\end{itemize}
+			\item
+				Beispiel: 24 bit HS Adresse \todo{Übungen zu Tags im Cache etc.\ machen}
+				\begin{itemize}
+					\item
+						\SI{16}{MB} großer Hauptspeicher
+					\item
+						24 Bit Adresse ($2^{24}$ = \SI{16}{MB}
+					\item
+						Cache ist \SI{64}{KB} groß
+					\item
+						Cache-Zeile, bzw.\ Hauptspeicher-Block \SI{4}{Bytes}
+					\item
+						$w = \SI2{bit}$, Identifier für Dateneinheit im Block (wegen $4=2^2$ Blockgröße)
+					\item
+						\SI{22}{bit} bleiben als identifier für HS Block übrig. Davon
+						\begin{itemize}
+							\item
+								$r=\SI{14}{bit}$ für $16 = 2^{14}$ Cachezeilen Einträge
+							\item
+								8 Bit langes Tag ($=22-14$)
+						\end{itemize}
+
+				\end{itemize}
+			\item
+				Falls Programm 2 HS Blöcke addressiert, die auf selbe Cachezeile abgebildet werden, sind Cache Fehlzugriffe häufig \Ra{} Folgen durch Victim Cache abfangen
+			\item
+				Victim Cache: Aus Cache verdrängter Eintrag wandert in Victim-Cache: meist zwischen L1 und nächster Stufe angeordnet, geringe Größe (4--16 Zeilen), vollständig assoziativ
+		\end{itemize}
+	\item
+		Vollassoziativer Cache
+		\begin{itemize}
+			\item
+				Kein Index, Speicheradresse nur Tag und Wort
+			\item
+				Tag einer jeden Cachezeile muss auf Übereinstimmung untersucht werden \ra{} teuer!
+		\end{itemize}
+\end{itemize}
 \subsubsection{Cache-Ersetzungsstrategien}
+\begin{itemize}
+	\item
+		Wann und wie wird Hauptspeicher aktualisiert?
+		\begin{itemize}
+			\item
+				Write through: jede Änderung sofort in übergeordneten Speicher. Immer konsistent, aber aufwändig. L1/L2 arbeitet nach diesem Prinzip
+			\item
+				Write back: Aktualisierung erst bei VErdrängung, Ausgabeoperation oder Zugriff eines anderen Prozessors. Dirty Bit um Rückschreiben nicht modifizierter Blöcke zu vermeiden.
+
+				Letzte Hierarchiestufe arbeitet nach diesem Prinzip
+			\item
+				Kombinieren mit Write allocate / write-non-allocate (wasauchimmer)
+		\end{itemize}
+	\item
+		Welche Zeile wird ersetzt?
+		\begin{itemize}
+			\item
+				LRU (alterungsinformation in Cache Verwaltungsbits)
+			\item
+				LFU (Ersetzen der am wenigsten benutzten Zeile)
+			\item
+				FIFO (durch Ringpuffer realisierbar)
+			\item
+				zufällig (pseudo-random)
+		\end{itemize}
+	\item
+\end{itemize}
+\subsubsection{Cache-Bewertung}
+\begin{itemize}
+	\item
+		3 Arten von Fehlzugriffen: 3 Cs
+		\begin{itemize}
+			\item
+				Compulsory: erster Zugriff
+			\item
+				Capacity: Cache einfach zu klein um alle Blöcke die aktuell benötigt werden zu halten
+			\item
+				Conflict: Adresskonflikt
+		\end{itemize}
+	\item
+		Je größer Cache desto unnötiger hoher Assoziativitätsgrad
+	\item
+		8-fach assoziativer Cache ist aus praktischer Sicht (miss rate) genauso effektiv  wie ein voll-assoziativer
+	\item
+		2:1-Cache-Regel: Miss Rate eines Direct-Mapped Cache der Größe $n \approx $ Miss-Rate eines 2-Weg assoziativen Cache der Größe $\frac{n}2$
+	\item
+		Übergang von 1-fach zu 2-fach assoziativität erhöht Taktzykluszeit um 10\% bei externen, um 2\% bei internen Caches \ra{} vernachlässigbar für interne Caches
+	\item
+		Leistungsbetrachtungen
+		\begin{itemize}
+			\item
+				mittlere effektive Speicherzugriffszeit $T_a = T_h + m\cdot T_m$
+
+				$m$ miss rate, $T_m$ miss penalty (nachladezeit), $T_h$ zugrifffszeit (hit time)
+			\item
+				Reduzierung von $m$:
+				\begin{itemize}
+					\item
+						durch erhöhung der Kapazität oder des Grades an Assoziativität: erhöht Zugriffszeit $T_h$
+					\item
+						Durch Erhöhung der Blockgröße: erhöht Nachladezeit $T_m$
+					\item
+						Bei Direktabbildenden Caches: Victim Cache
+					\item
+						pre-fetching
+				\end{itemize}
+			\item
+				Reduzierung von $T_h$:
+				\begin{itemize}
+					\item
+						$T_h$ PrimärCache: entscheidend für Prozessortaktrate
+					\item
+						$T_h$ SekundärCache: entscheidend für Wartezyklen
+					\item
+						$T_h$ reduzieren durch kleinen, oder einfacher Organisationsstruktur -- aber nachteilig bzgl.\ Fehlrate $m$
+				\end{itemize}
+			\item
+				Reduzierung $T_m$
+				\begin{itemize}
+					\item
+						Durch SekundärCache: $T_m$ wird selbst zu $T_a = T_h + \dots$
+					\item
+						Einführung nicht-blockierender Caches: nachladen und Zugriff bei Misses gleichzeitig möglich, mehrere ausstehende Speicherzugriffe gleichzeitig
+					\item
+						$T_m$ maßgeblich durch Prozessor/Systembus bestimmt
+				\end{itemize}
+		\end{itemize}
+	\item
+		Höhere Assoziativitätsgrad \Ra{} höhere Taktzeiten
+	\item
+		Je größer Block Block, \Ra{} Fehlrate steigt wieder leicht an, vor allem bei kleiner Gesamtgröße
+	\item
+		Je größer Blocksize, desto länger dauert $T_m$
+	\item
+		Cache-Bewertung Zusammenfassung:
+		\begin{itemize}
+			\item
+				N-Fach assoziativer Cache erfordert $n$-Komparatoren
+			\item
+				direkt abbildender Cache nur 1 Komparator, da Cache-Zeile eindeutig fest steht. Braucht jedoch häufiges Umladen \Ra{} wirksamkeit sinkt
+			\item
+				bei assoziativen Caches W'keit für Conflicts geringer
+			\item
+				Am besten bei voll-assoziativem Cache, aber langsam und teuer
+			\item
+				In heutigen Prozessoren: Grad 2, 4, oder 8 bzw.\ 16. Wirtschaftlicher und Technischer Kompromiss
+		\end{itemize}
+\end{itemize}
 \subsubsection{Ausnutzen von Cache-Effekten}
+\begin{itemize}
+	\item
+		Daten
+		\begin{itemize}
+			\item
+				Array-Merging (verbesserung räumliche Lokalität durch Verbundarray statt zwei Arraya)
+			\item
+				Schleifenvertauschung (Vertauschung von Schleifenverschachtelungen um Datenzugriff in Speicherordnung zu erzwingen)
+			\item
+				Schleifenfusion (Zusammenfassen zweier Schleifen mit selber Durchlaufcharakteristik und überlappenden Variablen
+			\item
+				Blocking (Verbesserung zeitlicher Lokalität durch Zusammenfassen von Daten zu kompakten Blöcken anstatt zeilen- und spaltenweise durchlaufen)
+
+		\end{itemize}
+	\item
+		Array-Merging, Schleifenvertauschen, Schleifenfusion, Cache-Blocking (grob), Funktionsweise, Einfluss auf zeitliche/örtliche Lokalität? (162--169)
+\end{itemize}
+
 \subsubsection{Cache-Kohärenz}
+\subsection{Optimale Pipelinetiefe}

@@ -1,0 +1,46 @@
+\section{Homogene und heterogene Multikern-Architekturen}
+\subsection{Motivation Multikern Architekturen}
+\begin{itemize}
+	\item
+		Warum multicore?
+		\begin{itemize}
+			\item
+				Bis 2002 leistungssteigerung primär durch höhere Taktzahlen
+			\item
+				Erhöhung der Taktfrequenz stößt an Grenzen (Wärme) \Ra{} Verbesserungen durch intelligentere Architekturen, aber dynamische Sprungvorhersage bereits 95\% Trefferquote, geht jetzt auch nicht mehr viel
+		\end{itemize}
+	\item
+		Mehrere Prozessorkerne auf einem Chip
+	\item
+		Pollacks Regel:
+		\begin{itemize}
+			\item
+				Rechenleistungszuwachs {\raise.17ex\hbox{$\scriptstyle\sim$}} $\sqrt{\text{Anstieg Komplexität}}$
+			\item
+				Verdopplung der Logik in Prozessor \ra 40\% mehr Leistung
+		\end{itemize}
+	\item
+		Weitere Vorteile: Einzelkerne an und ausschaltbar, immer optimale Versorgungsspannung und Frequenz, Rechenlast gleichmäßiger Verteilen
+	\item
+		Umgekehrte  Anwendung der Regel von Pollack: im oberen beherrschabren Energieverbrauchs Spektrum bleiben und Anzahl der Kerne erhöhen (statt $1\times1000000000$ lieber $100\times10000000$ Transistoren)
+		\begin{itemize}
+			\item
+				Leistung nimmt invers quadratisch ab: auf halber Fläche 70\% der Leistung des größeren Systems möglich
+			\item
+				Leistungsverbrauch pro Kern nimmt linear ab/zu
+			\item
+				Durchsatz steigt annähernd linear mit größerer Anzahl Kerne
+		\end{itemize}
+	\item
+		Nach Amdahls Law ist Geschwindigkeitszuwachs durch parallelisierung limitiert: Gilt jedoch nur für eine auf allen Kernen laufende Applikation. Häufig jedoch viele Applikationen
+	\item
+		Roofline Modell:
+		\begin{itemize}
+			\item
+				Wichtige Größe: Operationelle Intensität -- Anzahl der Operationen pro geholtem Byte [Flops/Byte], messgröße für Verkeher zwischen DRAM und Cache
+		\end{itemize}
+\end{itemize}
+\subsection{Leistungsanalyse und -bewertung homogener und heterogener Multikern Prozessoren}
+\subsection{Beispiel homogene Multikern-Architekturen}
+\subsubsection{Intel Skylake, Haswell, Sandy Bridge}
+\subsubsection{ AMD Ryzen}

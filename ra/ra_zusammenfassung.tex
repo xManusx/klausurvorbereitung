@@ -15,7 +15,14 @@
 
 \usepackage{amsmath}
 \usepackage{hyperref}
+\def\ra{$\rightarrow$}
+\def\Ra{$\Rightarrow$}
 
+\usepackage{siunitx}
+\sisetup{tophrase={\,--\,}}
+\def\idr{i.\,d.\,R.}
+
+\usepackage{todonotes}
 
 \usepackage{graphicx}
 
@@ -45,6 +52,7 @@
 \pagenumbering{Roman}
 
 \tableofcontents
+\listoftodos
 
 
 \newpage
@@ -56,12 +64,7 @@
 
 
 \newpage
-\section{Homogene und heterogene Multikern-Architekturen}
-\subsection{Motivation Multikern Architekturen}
-\subsection{Leistungsanalyse und -bewertung homogener und heterogener Multikern Prozessoren}
-\subsection{Beispiel homogene Multikern-Architekturen}
-\subsubsection{Intel Skylake, Haswell, Sandy Bridge}
-\subsubsection{ AMD Ryzen}
+\input{kap2}
 
 \subsection{Beispiel heterogene Multikern Architekturen}
 \subsubsection{GPGPUs}
