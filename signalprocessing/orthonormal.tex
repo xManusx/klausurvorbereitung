@@ -1,0 +1,75 @@
+\section{Families of Orthonormal Functions}
+\begin{itemize}
+	\item
+		A set of (continuous, defined over $[0,1]$) functions $\Psi_i(t)$ satisfies the orthonormality condition
+		\begin{align*}
+			\langle\Psi_i(t), \Psi_j(t)\rangle = \begin{cases}
+				1 \quad& \text{ for $i = j$}\\
+				0 \quad& \text{ for $i\neq j$}
+			\end{cases}
+		\end{align*}
+		where the inner product is defined as 
+		\begin{align*}
+			\langle\Psi_i(t), \Psi_j(t)\rangle = \intop_0^1 \Psi_i(t) \Psi_j(t) \id t
+		\end{align*}
+	\item
+		Signal is represented by this set  by
+		\begin{align*}
+			\widehat\phi(t) = \sum_{i=1}^N \phi_i \cdot \Psi_i(t)
+		\end{align*}
+	\item
+		MSE for $N$-Term approximations
+		\begin{align*}
+			MSE(N) = \intop_0^1 \phi^2(t) \id t - \sum_{i=1}^N (\phi_i^{opt})^2
+		\end{align*}
+	\item
+		\begin{align*}
+			\phi_i^{opt} = \langle\phi(t), \Psi_i(t)\rangle = \intop_0^1 \phi(t) \cdot \Psi_i(t) \id t
+		\end{align*}
+		
+\end{itemize}
+
+\subsection{Standard Sampling}
+\begin{itemize}
+	\item
+		Standard sampling functions
+		\begin{align*}
+			\Psi_i^S(t) = \begin{cases}
+				\sqrt{N} \quad& \text{ for } t \in \left[\frac{i-1}N, \frac{i}N\right)\\
+				0 \quad& \text{ otherwise}
+			\end{cases}
+		\end{align*}
+	\item
+		Optimal coefficients are normalized averages over sample intervals
+		\begin{align*}
+			\phi_i^{opt} = \frac1{\sqrt{N}} \left(\frac{1}{\nicefrac{1}{N}} \intop_{\frac{i-1}{N}}^{\frac{i}{N}} \phi(t)  \id t \right)
+		\end{align*}
+	\item
+		\mathbf{Unitary Matrices}
+		\begin{itemize}
+			\item
+				Satisfy the orthonormality condition for a square Matrix $U$ of size $N\times N$
+				\begin{itemize}
+					\item
+						For general complex valued matrices:
+						\begin{align*}
+							U^*U = I
+						\end{align*}
+					\item
+						For real valued matrices
+						\begin{align*}
+							U^TU=I
+						\end{align*}
+				\end{itemize}
+			\item
+				Matrix columns are orthonormal
+				\begin{align*}
+					\mathbf{u}_i^*\mathbf{u}_j = \begin{cases}
+						1 \quad & \text{ for } i = j\\
+						0 \quad & \text{ for } i \neq j
+					\end{cases}
+				\end{align*}
+				
+				Rows are also orthonormal
+		\end{itemize}
+\end{itemize}

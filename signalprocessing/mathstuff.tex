@@ -1,0 +1,69 @@
+
+\section{Math-stuff}
+\subsection{Integration by substitution}
+\begin{enumerate}
+	\item
+		\begin{align*}
+			\intop f(x) \id x = \intop f(\phi(u)) \phi'(u) \id u
+		\end{align*}
+	\item
+		$x = \phi(u)$ festlegen, so dass Integral handhabbar ist
+		\begin{align*}
+			\intop e^{2x} \id x \Rightarrow 2x = u
+		\end{align*}
+	\item
+		Nach $x$ auflösen: $x = \frac{u}2 \Rightarrow \phi(u) = \frac{u}2$
+	\item
+		Integrationsvariable ersetzen:
+		\begin{align*}
+		\id x = \phi'(u) \id u \left(\Rightarrow \id x = \frac12 \id u \right)
+		\end{align*}
+	\item
+		Rücksubsitution mit Gleichung aus Schritt 2
+	\item
+		Oder bei bestimmtem Integral: Grenzen mitsubsituieren:
+		\begin{align*}
+			\intop_a^b f(x) \id x = \intop_{\phi(a)}^{\phi(b)} f(\phi(u)) \phi'(u) \id u
+		\end{align*}
+
+\end{enumerate}
+
+\subsection{Stochastic rules}
+\begin{itemize}
+	\item
+		Expectation of continuous random variable
+		\begin{align*}
+			\mu = \int x f(x) \id x
+		\end{align*}
+	\item
+		Variance of discrete random variable:
+		\begin{align*}
+			Var(X) &= \sum_{i=1}^n p_i \cdot (x_i - \mu)^2\\
+						 &= \left(\sum_{i=1}^np_ix_i^2\right) - \mu^2
+		\end{align*}
+	\item
+		Variance $\sigma^2$ of continuous random variable
+		\begin{align*}
+			Var(X) &= \int (x - \mu)^2f(x) \id x\\
+						 &= \int x^2 f(x) \id x - \mu^2
+		\end{align*}
+\end{itemize}
+
+\subsection{Weird integration rules we encountered}
+\begin{itemize}
+	\item
+		Partial derivative over integration function
+\begin{align*}
+	\frac\partial{\partial x} \intop_y^x f(t) \id t &= f(x)\\
+	\frac\partial{\partial x} \intop_x^y f(t) \id t &= -f(x)\\
+\end{align*}
+\item
+	Vector derivatives
+	\begin{align*}
+		\frac\partial{\partial \mathbf{z}} \absbb{\mathbf{z}}^2_2 = \frac\partial{\partial \mathbf{z}} \mathbf{z}^T\mathbf{z} = 2\mathbf{z}
+	\end{align*}
+\item
+	\begin{align*}
+		\int f(y) \id x = f(y) \int \id x = f(y)
+	\end{align*}
+\end{itemize}

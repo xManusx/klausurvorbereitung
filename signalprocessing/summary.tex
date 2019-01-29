@@ -1,0 +1,84 @@
+\documentclass[12pt,parskip,]{scrartcl}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{csquotes} %provides \enquote{...}, handling of quotation marks
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{gauss} %provides nice matrices
+\usepackage[makeroom]{cancel} %provides \cancel
+\usepackage{esint}
+\usepackage{ulem}
+\usepackage{nicefrac}
+
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.8}
+
+\usepackage{hyperref}
+\usepackage{braket}
+
+\usepackage{enumitem} %for customizing enumerations
+\usepackage[all]{nowidow}
+\usepackage{graphicx} %to insert pictures
+
+\newcommand{\id}{\, \mathrm{d}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% New definition of square root:
+% it renames \sqrt as \oldsqrt
+\let\oldsqrt\sqrt
+% it defines the new \sqrt in terms of the old one
+\def\sqrt{\mathpalette\DHLhksqrt}
+\def\DHLhksqrt#1#2{%
+	\setbox0=\hbox{$#1\oldsqrt{#2\,}$}\dimen0=\ht0
+	\advance\dimen0-0.2\ht0
+	\setbox2=\hbox{\vrule height\ht0 depth -\dimen0}%
+{\box0\lower0.4pt\box2}}
+
+\newcommand{\abs}[1]{
+	\left \vert #1 \right \vert
+}
+\newcommand{\absbb}[1]{
+	\left \Vert #1 \right \Vert
+}
+
+\newcommand{\Pro}[1]{% %defines Pr{...}
+	\text{Pr} \left\{ #1 \right\}
+	%\text{Pr}\,\Set{ #1 }
+}
+
+%\newcommand{\Set}[1]{%
+	%\left\{\,#1\,\right\}
+%} 
+\renewcommand{\phi}{\varphi}
+
+
+\def\eg{e.\,g.}
+\def\ie{i.\,e.}
+\def\st{s.\,t.}
+
+
+
+
+\title{Signal, Data and Image Processing -- Summary}
+\author{Magnus Berendes}
+\date{\today}
+\subtitle{236100}
+\usepackage{cleveref}
+\begin{document}
+\maketitle
+
+\tableofcontents
+\include{samplingandquantization}
+
+\include{orthonormal}
+
+\include{mathstuff}
+
+\end{document}

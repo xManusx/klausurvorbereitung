@@ -1,0 +1,134 @@
+
+\section{Sampling and Quantization}
+\subsection{Quantization}
+
+\begin{itemize}
+	\item
+		Quantization: Mapping input $x \in [\phi_L, \phi_H)$ with $b$ bits to $J = 2^b$ representation levels with use of $J+1$ decision levels
+\end{itemize}
+
+%\subsubsection{Quantizer}
+\begin{itemize}
+	\item
+		$J = 2^b$ quantization intervals of equal size
+		\begin{align*}
+			\Delta_q &= \frac{\phi_H - \phi_L}{2^b}\\
+			d_i &= \phi_L + i\Delta_q\\
+			r_i &= \phi_L + \left(i-\frac12\right)\Delta_q\\
+		\end{align*}
+	\item
+		Mean Square Error:
+		\begin{align*}
+			E\Set{\varepsilon_Q^2} = \sum_{i=1}^J \intop_{d_{i - 1}}^{d_i} \left(x - r_i\right)^2 p(x) \id x
+		\end{align*}
+	\item
+		Quantizer Optimization Problem: minizing $E\Set{\varepsilon_Q^2}$ over all decision and representation levels.
+
+		Conditions for optimality:
+		\begin{align*}
+				\frac\partial{\partial r_i} &= 0\\
+				\frac\partial{\partial d_i} &= 0\\
+		\end{align*}
+	\item
+		Optimal decision regions and levels:
+		\begin{itemize}
+			\item
+				Given best decision regions:
+				\begin{align*}
+					r_j = \frac{\int_{d_{j-1}}^{d_j} x p(x) \id x}{\int_{d_{j-1}}^{d_j} p(x) \id x}
+				\end{align*}
+			\item
+				Given best representation levels:
+				\begin{align*}
+					d_j = \frac{r_j + r_{j+1}}2
+				\end{align*}
+		\end{itemize}
+	\item
+		Use that in Max-Lloyd Algorithm
+		\begin{enumerate}
+			\item
+				Init: Set/guess decision levels
+			\item
+				Compute optimal representation levels
+			\item
+				Compute optimal decision levels
+			\item
+				If stopping criteria is not met, go back to Step 2
+		\end{enumerate}
+	\item
+		Optimality of vector quantization
+		\begin{align*}
+			\mathbf{r}_j^{opt} &= \frac{\int_{\mathbf{x} \in D_j} \mathbf{x} p(\mathbf{x}) \id \mathbf{x}}{\int_{\mathbf{x} \in D_j} p(\mathbf{x}) \id \mathbf{x}}\\
+			D_j^{opt} &= \Set{ \mathbf{x} \mid  \absbb{\mathbf{x} - \mathbf{r}_j}_2^2 < \absbb{\mathbf{x} - \mathbf{r}_i}_2^2, i  = 1, \dots, J}
+		\end{align*}
+	\item
+
+\end{itemize}
+
+\subsection{Sampling}
+\begin{itemize}
+	\item
+		Uniform Sampling
+		\begin{itemize}
+			\item
+				All intervals same size $\Delta  = \frac1N$
+			\item
+				MSE optimal are interval averages
+				\begin{align*}
+					\phi_i = \frac1\Delta \intop_{(i-1)\Delta}^{i\Delta} \phi(t) \id t
+				\end{align*}
+		\end{itemize}
+	\item
+		Reconstruction MSE
+		\begin{align*}
+			MSE = \intop_0^1 \phi^2(t) \id t - \frac1N \sum_{i=1}^N (\phi_i)^2
+		\end{align*}
+\end{itemize}
+
+\subsection{Bit-Allocation for 2D Signals}
+\begin{itemize}
+	\item
+		$N_x$ samples in each row: sampling interval $\Delta_x = \frac1{N_x}$
+	\item
+		$N_y$ samples in each row: sampling interval $\Delta_y = \frac1{N_y}$
+	\item
+		Overall $N_xN_y$ samples
+		\begin{align*}
+			\Delta_{i,j} = \left[\frac{i}{N_x}, \frac{i+1}{N_x}\right] \times \left[\frac{j}{N_y}, \frac{j+1}{N_y}\right]
+		\end{align*}
+		with size $Area(\Delta_{i,j}) = \Delta_x\Delta_y = \frac1{N_xN_y}$
+	\item
+		Optimal sampling coefficient is the average signal-value in the sampling area
+		\begin{align*}
+			\phi_{i,j}^{opt} = \frac1{Area\left(\Delta_{i,j}\right)} \iint\limits_{\Delta_{i,j}}  \phi(x,y) \id x \id y
+		\end{align*}
+	\item
+		Bit-budget constraint
+		\begin{itemize}
+			\item
+				Total number of samples $N=N_x N_y$
+			\item
+				Bits per sample after quantization: $b$
+			\item
+				Total bit budget: $B$, constraint is $B = bN_xN_y$
+		\end{itemize}
+	\item
+		\begin{align*}
+			MSE^{total} &= \frac1{12N_x^2} \sum_{i=0}^{N_x-1} \sum_{j=0}^{N_y-1} \left(\phi_x'\left(x^{i,j}_c, y^{i,j}_c \right)\right)^2 \Delta_x \Delta_y\\
+									&\quad + \frac1{12N_y^2} \sum_{i=0}^{N_x-1} \sum_{j=0}^{N_y-1} \left( \phi_y' \left(x^{i,j}_c, y^{i,j}_c \right) \right)^2 \Delta_x\Delta_y\\
+									&\quad + \frac1{12}\frac{(\phi_H - \phi_L)^2}{2^{2b}}
+			\intertext{Assuming $\phi(x,y)$ is linear in each region:}\\
+			&= \frac1{12N_x^2} \intop_0^1 \intop_0^1 (\phi_x'(x,y))^2 \id x \id y + \frac1{12N_y^2} \intop_0^1 \intop_0^1 (\phi_y'(x,y))^2 \id x \id y + \frac1{12} \frac{(\phi_H - \phi_L)^2}{2^{2b}}\\
+			MSE^{total}(N_x, N_y, b)	&= \frac1{12N_x^2} Energy(\phi_x') + \frac1{12N_y^2} Energy(\phi_y') + \frac1{12} \frac{(\phi_H - \phi_L)^2}{2^{2b}}
+		\end{align*}
+		
+\end{itemize}
+\subsection{1D Bit Allocation}
+\begin{itemize}
+	\item
+		Bit allocation optimization:
+		\begin{align*}
+			\min_{N_t,b} & \frac1{12N_t^2} Energy(\phi') + \frac1{12} \frac{(\phi_H - \phi_L)^2}{2^{2b}}\\
+									 &\text{s.t.} N_tb = B
+		\end{align*}
+\end{itemize}
